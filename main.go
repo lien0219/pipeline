@@ -69,6 +69,17 @@ func main() {
 		panic(err)
 	}
 
+	if err := initialize.MySQL(); err != nil {
+		global.Logger.Error("Failed to initialize MySQL: " + err.Error())
+		panic(err)
+	}
+
+	// 执行数据库迁移
+	if err := initialize.Migrate(); err != nil {
+		global.Logger.Error("Failed to migrate database: " + err.Error())
+		panic(err)
+	}
+
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	// Create Gin engine

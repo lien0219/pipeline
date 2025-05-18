@@ -1,0 +1,42 @@
+{"level":"error","time":"2025-05-18T20:49:11.783+0800","caller":"runtime/proc.go:271","msg":"Failed to initialize MySQL: Error 1049 (42000): Unknown database 'assembly_line'"}
+{"level":"info","time":"2025-05-18T20:59:19.565+0800","caller":"runtime/asm_amd64.s:1695","msg":"Starting server on port 8080"}
+{"level":"info","time":"2025-05-18T20:59:51.374+0800","caller":"gin@v1.10.0/context.go:185","msg":"| 404 |      1.0061ms |    172.23.144.1 | GET | / |"}
+{"level":"info","time":"2025-05-18T21:00:10.327+0800","caller":"gin@v1.10.0/context.go:185","msg":"| 200 |       629.8µs |    172.23.144.1 | GET | /api/v1/health |"}
+{"level":"info","time":"2025-05-18T21:05:31.388+0800","caller":"gin@v1.10.0/context.go:185","msg":"| 200 |            0s |    172.23.144.1 | GET | /api/v1/health |"}
+{"level":"info","time":"2025-05-18T21:05:35.529+0800","caller":"runtime/proc.go:271","msg":"Shutting down server..."}
+{"level":"info","time":"2025-05-18T21:05:37.222+0800","caller":"runtime/proc.go:271","msg":"Server exiting"}
+{"level":"info","time":"2025-05-18T21:05:46.822+0800","caller":"runtime/asm_amd64.s:1695","msg":"Starting server on port 8080"}
+{"level":"info","time":"2025-05-18T21:05:54.617+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m200\u001b[0m |       556.3µs |    172.23.144.1 | \u001b[34mGET\u001b[0m | /api/v1/health |"}
+{"level":"warn","time":"2025-05-18T21:06:04.318+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[33m404\u001b[0m |            0s |    172.23.144.1 | \u001b[34mGET\u001b[0m | /api/v1 |"}
+{"level":"info","time":"2025-05-18T21:06:32.045+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m200\u001b[0m |            0s |    172.23.144.1 | \u001b[34mGET\u001b[0m | /api/v1/health |"}
+{"level":"info","time":"2025-05-18T22:01:49.077+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m204\u001b[0m |      2.2284ms |             ::1 | \u001b[37mOPTIONS\u001b[0m | /api/v1/auth/register |"}
+{"level":"error","time":"2025-05-18T22:01:49.224+0800","caller":"gin@v1.10.0/context.go:185","msg":"Create user error: Error 1146 (42S02): Table 'assembly_line.user' doesn't exist"}
+{"level":"error","time":"2025-05-18T22:01:49.224+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[31m500\u001b[0m |    140.8956ms |             ::1 | \u001b[32mPOST\u001b[0m | /api/v1/auth/register |"}
+{"level":"info","time":"2025-05-18T22:03:58.152+0800","caller":"runtime/proc.go:271","msg":"Shutting down server..."}
+{"level":"info","time":"2025-05-18T22:03:58.154+0800","caller":"runtime/proc.go:271","msg":"Server exiting"}
+{"level":"info","time":"2025-05-18T22:04:34.014+0800","caller":"runtime/asm_amd64.s:1695","msg":"Starting server on port 8080"}
+{"level":"info","time":"2025-05-18T22:05:15.143+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m204\u001b[0m |            0s |             ::1 | \u001b[37mOPTIONS\u001b[0m | /api/v1/auth/register |"}
+{"level":"error","time":"2025-05-18T22:05:15.244+0800","caller":"gin@v1.10.0/context.go:185","msg":"Create user error: Error 1146 (42S02): Table 'assembly_line.user' doesn't exist"}
+{"level":"error","time":"2025-05-18T22:05:15.244+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[31m500\u001b[0m |     97.9331ms |             ::1 | \u001b[32mPOST\u001b[0m | /api/v1/auth/register |"}
+{"level":"info","time":"2025-05-18T22:10:42.633+0800","caller":"runtime/proc.go:271","msg":"Shutting down server..."}
+{"level":"info","time":"2025-05-18T22:10:42.635+0800","caller":"runtime/proc.go:271","msg":"Server exiting"}
+{"level":"info","time":"2025-05-18T22:10:50.382+0800","caller":"gin_pipeline/main.go:78","msg":"数据库迁移成功"}
+{"level":"info","time":"2025-05-18T22:10:50.384+0800","caller":"runtime/asm_amd64.s:1695","msg":"Starting server on port 8080"}
+{"level":"info","time":"2025-05-18T22:11:10.778+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m204\u001b[0m |            0s |             ::1 | \u001b[37mOPTIONS\u001b[0m | /api/v1/auth/register |"}
+{"level":"info","time":"2025-05-18T22:11:10.885+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m201\u001b[0m |     103.925ms |             ::1 | \u001b[32mPOST\u001b[0m | /api/v1/auth/register |"}
+{"level":"info","time":"2025-05-18T22:12:02.868+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m204\u001b[0m |            0s |             ::1 | \u001b[37mOPTIONS\u001b[0m | /api/v1/auth/login |"}
+{"level":"info","time":"2025-05-18T22:12:02.984+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m200\u001b[0m |    114.7555ms |             ::1 | \u001b[32mPOST\u001b[0m | /api/v1/auth/login |"}
+{"level":"info","time":"2025-05-18T22:12:33.970+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m204\u001b[0m |            0s |             ::1 | \u001b[37mOPTIONS\u001b[0m | /api/v1/users/me |"}
+{"level":"info","time":"2025-05-18T22:12:34.065+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m200\u001b[0m |      3.6576ms |             ::1 | \u001b[34mGET\u001b[0m | /api/v1/users/me |"}
+{"level":"info","time":"2025-05-18T22:12:56.483+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m204\u001b[0m |            0s |             ::1 | \u001b[37mOPTIONS\u001b[0m | /api/v1/auth/login |"}
+{"level":"info","time":"2025-05-18T22:12:56.567+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m200\u001b[0m |     82.7708ms |             ::1 | \u001b[32mPOST\u001b[0m | /api/v1/auth/login |"}
+{"level":"info","time":"2025-05-18T22:13:40.339+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m204\u001b[0m |            0s |             ::1 | \u001b[37mOPTIONS\u001b[0m | /api/v1/users/me |"}
+{"level":"info","time":"2025-05-18T22:13:40.391+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m200\u001b[0m |      2.0287ms |             ::1 | \u001b[34mGET\u001b[0m | /api/v1/users/me |"}
+{"level":"info","time":"2025-05-18T22:15:40.223+0800","caller":"runtime/proc.go:271","msg":"Shutting down server..."}
+{"level":"info","time":"2025-05-18T22:15:40.225+0800","caller":"runtime/proc.go:271","msg":"Server exiting"}
+{"level":"info","time":"2025-05-18T22:19:42.512+0800","caller":"gin_pipeline/main.go:78","msg":"数据库迁移成功"}
+{"level":"info","time":"2025-05-18T22:19:42.514+0800","caller":"runtime/asm_amd64.s:1695","msg":"Starting server on port 8080"}
+{"level":"info","time":"2025-05-18T22:19:54.546+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m204\u001b[0m |            0s |             ::1 | \u001b[37mOPTIONS\u001b[0m | /api/v1/users/me |"}
+{"level":"info","time":"2025-05-18T22:19:54.561+0800","caller":"gin@v1.10.0/context.go:185","msg":"| \u001b[32m200\u001b[0m |      1.6181ms |             ::1 | \u001b[34mGET\u001b[0m | /api/v1/users/me |"}
+{"level":"info","time":"2025-05-18T22:19:55.049+0800","caller":"gin_pipeline/main.go:78","msg":"数据库迁移成功"}
+{"level":"info","time":"2025-05-18T22:19:55.050+0800","caller":"runtime/asm_amd64.s:1695","msg":"Starting server on port 8080"}
