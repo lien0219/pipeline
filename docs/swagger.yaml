@@ -1,0 +1,306 @@
+basePath: /api/v1
+definitions:
+  v1.ChangePasswordRequest:
+    properties:
+      newPassword:
+        maxLength: 32
+        minLength: 6
+        type: string
+      oldPassword:
+        type: string
+    required:
+    - newPassword
+    - oldPassword
+    type: object
+  v1.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  v1.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 32
+        minLength: 6
+        type: string
+      username:
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  v1.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 50
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://www.example.com/support
+  description: Enterprise API Server
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Enterprise API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with username and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User login
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: Registration information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User registration
+      tags:
+      - auth
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Check if the API is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health check endpoint
+      tags:
+      - system
+  /system/config:
+    get:
+      consumes:
+      - application/json
+      description: Get public system configuration
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get system configuration
+      tags:
+      - system
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Get the current user's information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user info
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update the current user's information
+      parameters:
+      - description: User information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user info
+      tags:
+      - users
+  /users/password:
+    put:
+      consumes:
+      - application/json
+      description: Change the current user's password
+      parameters:
+      - description: Password information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

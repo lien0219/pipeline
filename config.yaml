@@ -1,5 +1,37 @@
-system:
-  host:"0.0.0.0"
-  port:5001
-  env:debug
-#  env:release
+server:
+  mode: debug
+  port: 8080
+  readTimeout: 60
+  writeTimeout: 60
+
+database:
+  driver: mysql
+  host: localhost
+  port: 3306
+  username: root
+  password: lyn123
+  database: assembly_line
+  charset: utf8mb4
+  maxIdle: 10
+  maxOpen: 100
+  maxLifetime: 3600
+  showSql: true
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  db: 0
+  poolSize: 100
+
+log:
+  level: debug
+  filename: ./logs/app.log
+  maxSize: 100
+  maxBackups: 10
+  maxAge: 30
+  compress: true
+
+jwt:
+  secret: your-secret-key
+  expireTime: 24
