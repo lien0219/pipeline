@@ -1,298 +1,528 @@
 <template>
-  <div class="dashboard-page">
-    <div class="page-header">
-      <h1>仪表盘</h1>
-      <p>欢迎回来，{{ user?.username }}</p>
-    </div>
-
-    <div class="dashboard-stats">
-      <div class="stat-card">
-        <div class="stat-icon">📊</div>
-        <div class="stat-content">
-          <h3>总访问量</h3>
-          <p class="stat-value">1,234</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon">👥</div>
-        <div class="stat-content">
-          <h3>用户数</h3>
-          <p class="stat-value">567</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon">📝</div>
-        <div class="stat-content">
-          <h3>内容数</h3>
-          <p class="stat-value">89</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon">🔄</div>
-        <div class="stat-content">
-          <h3>转化率</h3>
-          <p class="stat-value">12.3%</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard-content">
-      <div class="dashboard-card">
-        <h2>最近活动</h2>
-        <div class="activity-list">
-          <div class="activity-item">
-            <div class="activity-time">今天 10:30</div>
-            <div class="activity-details">
-              <h4>系统更新</h4>
-              <p>系统已更新到最新版本 v1.2.0</p>
+  <div class="app-container">
+    <el-row :gutter="20">
+      <el-col :xs="24" :sm="24" :md="24" :lg="18" :xl="18">
+        <el-card class="overview-card">
+          <template #header>
+            <div class="card-header">
+              <span>流水线概览</span>
+              <el-button type="primary" size="small" @click="refreshData">
+                <el-icon><Refresh /></el-icon>
+                刷新
+              </el-button>
             </div>
-          </div>
+          </template>
 
-          <div class="activity-item">
-            <div class="activity-time">昨天 15:45</div>
-            <div class="activity-details">
-              <h4>新用户注册</h4>
-              <p>有5名新用户完成了注册</p>
-            </div>
-          </div>
+          <el-row :gutter="20">
+            <el-col :span="6">
+              <div class="stat-card success">
+                <div class="stat-icon">
+                  <el-icon :size="24"><Check /></el-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ stats.success }}</div>
+                  <div class="stat-label">成功</div>
+                </div>
+              </div>
+            </el-col>
 
-          <div class="activity-item">
-            <div class="activity-time">2天前</div>
-            <div class="activity-details">
-              <h4>数据备份</h4>
-              <p>系统数据已成功备份</p>
-            </div>
-          </div>
-        </div>
-      </div>
+            <el-col :span="6">
+              <div class="stat-card running">
+                <div class="stat-icon">
+                  <el-icon :size="24"><Loading /></el-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ stats.running }}</div>
+                  <div class="stat-label">运行中</div>
+                </div>
+              </div>
+            </el-col>
 
-      <div class="dashboard-card">
-        <h2>系统状态</h2>
-        <div class="system-status">
-          <div class="status-item">
-            <div class="status-label">CPU使用率</div>
-            <div class="status-bar">
-              <div class="status-progress" style="width: 45%"></div>
-            </div>
-            <div class="status-value">45%</div>
-          </div>
+            <el-col :span="6">
+              <div class="stat-card failed">
+                <div class="stat-icon">
+                  <el-icon :size="24"><WarningFilled /></el-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ stats.failed }}</div>
+                  <div class="stat-label">失败</div>
+                </div>
+              </div>
+            </el-col>
 
-          <div class="status-item">
-            <div class="status-label">内存使用率</div>
-            <div class="status-bar">
-              <div class="status-progress" style="width: 60%"></div>
-            </div>
-            <div class="status-value">60%</div>
-          </div>
+            <el-col :span="6">
+              <div class="stat-card pending">
+                <div class="stat-icon">
+                  <el-icon :size="24"><Clock /></el-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ stats.pending }}</div>
+                  <div class="stat-label">等待中</div>
+                </div>
+              </div>
+            </el-col>
+          </el-row>
 
-          <div class="status-item">
-            <div class="status-label">磁盘使用率</div>
-            <div class="status-bar">
-              <div class="status-progress" style="width: 25%"></div>
-            </div>
-            <div class="status-value">25%</div>
+          <div class="chart-container">
+            <div ref="pipelineChart" style="width: 100%; height: 300px;"></div>
           </div>
+        </el-card>
 
-          <div class="status-item">
-            <div class="status-label">网络流量</div>
-            <div class="status-bar">
-              <div class="status-progress" style="width: 70%"></div>
+        <el-card class="recent-pipelines-card">
+          <template #header>
+            <div class="card-header">
+              <span>最近流水线</span>
+              <router-link to="/pipelines">
+                <el-button link type="primary">查看全部</el-button>
+              </router-link>
             </div>
-            <div class="status-value">70%</div>
+          </template>
+
+          <el-table :data="recentPipelines" style="width: 100%" v-loading="loading">
+            <el-table-column prop="name" label="名称" min-width="180">
+              <template #default="{ row }">
+                <router-link :to="`/pipelines/${row.id}`" class="pipeline-link">
+                  {{ row.name }}
+                </router-link>
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="status" label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag :type="getStatusType(row.status)" size="small">
+                  {{ getStatusText(row.status) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="branch" label="分支" width="120" />
+
+            <el-table-column prop="duration" label="耗时" width="120">
+              <template #default="{ row }">
+                {{ formatDuration(row.duration) }}
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="created_at" label="创建时间" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.created_at) }}
+              </template>
+            </el-table-column>
+
+            <el-table-column label="操作" width="120" fixed="right">
+              <template #default="{ row }">
+                <el-button
+                    link
+                    type="primary"
+                    size="small"
+                    @click="triggerPipeline(row.id)"
+                    :disabled="row.status === 'running'"
+                >
+                  运行
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </el-col>
+
+      <el-col :xs="24" :sm="24" :md="24" :lg="6" :xl="6">
+        <el-card class="activity-card">
+          <template #header>
+            <div class="card-header">
+              <span>最近活动</span>
+            </div>
+          </template>
+
+          <div class="activity-timeline">
+            <el-timeline>
+              <el-timeline-item
+                  v-for="(activity, index) in activities"
+                  :key="index"
+                  :type="getActivityType(activity.type)"
+                  :timestamp="formatDate(activity.timestamp)"
+                  :hollow="activity.hollow"
+              >
+                {{ activity.content }}
+              </el-timeline-item>
+            </el-timeline>
           </div>
-        </div>
-      </div>
-    </div>
+        </el-card>
+
+        <el-card class="quick-actions-card">
+          <template #header>
+            <div class="card-header">
+              <span>快捷操作</span>
+            </div>
+          </template>
+
+          <div class="quick-actions">
+            <el-button type="primary" @click="$router.push('/pipeline/create')">
+              <el-icon><Plus /></el-icon>
+              创建流水线
+            </el-button>
+
+            <el-button @click="$router.push('/builds/templates')">
+              <el-icon><Document /></el-icon>
+              构建模板
+            </el-button>
+
+            <el-button @click="$router.push('/deploy/environments')">
+              <el-icon><SetUp /></el-icon>
+              环境配置
+            </el-button>
+
+            <el-button @click="$router.push('/settings')">
+              <el-icon><Setting /></el-icon>
+              系统设置
+            </el-button>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { usePipelineStore } from '@/stores/pipeline';
+import { Check, Loading, WarningFilled, Clock, Refresh, Plus, Document, SetUp, Setting } from '@element-plus/icons-vue';
+import * as echarts from 'echarts/core';
+import { LineChart } from 'echarts/charts';
+import { GridComponent, TooltipComponent, TitleComponent, LegendComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+import dayjs from 'dayjs';
+import { ElMessage } from 'element-plus';
 
-const authStore = useAuthStore();
-const user = computed(() => authStore.currentUser);
+echarts.use([LineChart, GridComponent, TooltipComponent, TitleComponent, LegendComponent, CanvasRenderer]);
+
+const router = useRouter();
+const pipelineStore = usePipelineStore();
+const pipelineChart = ref(null);
+const chart = ref(null);
+const loading = ref(false);
+
+const stats = ref({
+  success: 0,
+  running: 0,
+  failed: 0,
+  pending: 0
+});
+
+const recentPipelines = ref([]);
+const activities = ref([]);
+
+// 获取数据
+const fetchData = async () => {
+  loading.value = true;
+  try {
+    // 获取流水线数据
+    const response = await pipelineStore.fetchPipelines({ limit: 5 });
+    recentPipelines.value = response.data || [];
+
+    // 统计数据
+    stats.value = {
+      success: 12,
+      running: 3,
+      failed: 2,
+      pending: 5
+    };
+
+    // 模拟活动数据
+    activities.value = [
+      { type: 'success', content: '流水线 "Frontend Deploy" 构建成功', timestamp: new Date(), hollow: false },
+      { type: 'warning', content: '流水线 "Backend API" 构建失败', timestamp: new Date(Date.now() - 3600000), hollow: false },
+      { type: 'primary', content: '用户 admin 创建了新的流水线 "Database Migration"', timestamp: new Date(Date.now() - 7200000), hollow: false },
+      { type: 'info', content: '系统更新完成', timestamp: new Date(Date.now() - 86400000), hollow: true },
+      { type: 'success', content: '流水线 "Mobile App" 部署成功', timestamp: new Date(Date.now() - 172800000), hollow: true }
+    ];
+
+    initChart();
+  } catch (error) {
+    console.error('Failed to fetch dashboard data:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 初始化图表
+const initChart = () => {
+  if (!pipelineChart.value) return;
+
+  if (chart.value) {
+    chart.value.dispose();
+  }
+
+  chart.value = echarts.init(pipelineChart.value);
+
+  const option = {
+    title: {
+      text: '流水线执行趋势',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'axis'
+    },
+    legend: {
+      data: ['成功', '失败', '总数'],
+      bottom: 0
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '10%',
+      top: '15%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        name: '成功',
+        type: 'line',
+        data: [5, 7, 6, 9, 8, 7, 10],
+        itemStyle: {
+          color: '#67C23A'
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(103, 194, 58, 0.3)' },
+              { offset: 1, color: 'rgba(103, 194, 58, 0.1)' }
+            ]
+          }
+        }
+      },
+      {
+        name: '失败',
+        type: 'line',
+        data: [2, 1, 3, 1, 2, 0, 1],
+        itemStyle: {
+          color: '#F56C6C'
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(245, 108, 108, 0.3)' },
+              { offset: 1, color: 'rgba(245, 108, 108, 0.1)' }
+            ]
+          }
+        }
+      },
+      {
+        name: '总数',
+        type: 'line',
+        data: [7, 8, 9, 10, 10, 7, 11],
+        itemStyle: {
+          color: '#409EFF'
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(64, 158, 255, 0.3)' },
+              { offset: 1, color: 'rgba(64, 158, 255, 0.1)' }
+            ]
+          }
+        }
+      }
+    ]
+  };
+
+  chart.value.setOption(option);
+};
+
+// 刷新数据
+const refreshData = () => {
+  fetchData();
+};
+
+// 触发流水线
+const triggerPipeline = async (id) => {
+  try {
+    await pipelineStore.triggerPipeline(id);
+    ElMessage.success('流水线已触发');
+    refreshData();
+  } catch (error) {
+    console.error('Failed to trigger pipeline:', error);
+  }
+};
+
+// 格式化状态
+const getStatusType = (status) => {
+  switch (status) {
+    case 'success': return 'success';
+    case 'running': return 'primary';
+    case 'failed': return 'danger';
+    case 'pending': return 'info';
+    default: return 'info';
+  }
+};
+
+const getStatusText = (status) => {
+  switch (status) {
+    case 'success': return '成功';
+    case 'running': return '运行中';
+    case 'failed': return '失败';
+    case 'pending': return '等待中';
+    default: return '未知';
+  }
+};
+
+// 格式化活动类型
+const getActivityType = (type) => {
+  switch (type) {
+    case 'success': return 'success';
+    case 'warning': return 'warning';
+    case 'primary': return 'primary';
+    default: return 'info';
+  }
+};
+
+// 格式化日期
+const formatDate = (date) => {
+  return dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+};
+
+// 格式化持续时间
+const formatDuration = (seconds) => {
+  if (!seconds) return '0s';
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  if (minutes === 0) {
+    return `${remainingSeconds}s`;
+  }
+
+  return `${minutes}m ${remainingSeconds}s`;
+};
+
+// 监听窗口大小变化
+const handleResize = () => {
+  if (chart.value) {
+    chart.value.resize();
+  }
+};
 
 onMounted(() => {
-  // 可以在这里加载仪表盘数据
+  fetchData();
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+  if (chart.value) {
+    chart.value.dispose();
+    chart.value = null;
+  }
 });
 </script>
 
 <style scoped>
-.dashboard-page {
-  width: 100%;
+.overview-card,
+.recent-pipelines-card,
+.activity-card,
+.quick-actions-card {
+  margin-bottom: 20px;
 }
 
-.page-header {
-  margin-bottom: 2rem;
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-color);
-}
-
-.page-header p {
-  color: var(--text-light);
-}
-
-.dashboard-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .stat-card {
-  background-color: var(--surface-color);
-  border-radius: 8px;
-  padding: 1.5rem;
   display: flex;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.stat-card.success {
+  background-color: rgba(103, 194, 58, 0.1);
+}
+
+.stat-card.running {
+  background-color: rgba(64, 158, 255, 0.1);
+}
+
+.stat-card.failed {
+  background-color: rgba(245, 108, 108, 0.1);
+}
+
+.stat-card.pending {
+  background-color: rgba(144, 147, 153, 0.1);
 }
 
 .stat-icon {
-  font-size: 2rem;
-  margin-right: 1rem;
+  margin-right: 15px;
 }
 
-.stat-content h3 {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-light);
-  margin-bottom: 0.25rem;
+.stat-info {
+  flex: 1;
 }
 
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 5px;
 }
 
-.dashboard-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
+.stat-label {
+  font-size: 14px;
+  color: #606266;
 }
 
-.dashboard-card {
-  background-color: var(--surface-color);
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.chart-container {
+  margin-top: 20px;
 }
 
-.dashboard-card h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  color: var(--text-color);
+.pipeline-link {
+  color: var(--el-color-primary);
+  text-decoration: none;
 }
 
-.activity-list {
+.pipeline-link:hover {
+  text-decoration: underline;
+}
+
+.activity-timeline {
+  padding: 10px 0;
+}
+
+.quick-actions {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 10px;
 }
 
-.activity-item {
-  display: flex;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.activity-time {
-  width: 100px;
-  color: var(--text-light);
-  font-size: 0.875rem;
-}
-
-.activity-details h4 {
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-
-.activity-details p {
-  color: var(--text-light);
-  font-size: 0.875rem;
-}
-
-.system-status {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-}
-
-.status-label {
-  width: 120px;
-  font-size: 0.875rem;
-  color: var(--text-color);
-}
-
-.status-bar {
-  flex: 1;
-  height: 8px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 0 1rem;
-}
-
-.status-progress {
-  height: 100%;
-  background-color: var(--primary-color);
-  border-radius: 4px;
-}
-
-.status-value {
-  width: 50px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-color);
-  text-align: right;
-}
-
-@media (max-width: 768px) {
-  .dashboard-content {
-    grid-template-columns: 1fr;
-  }
-
-  .activity-item {
-    flex-direction: column;
-  }
-
-  .activity-time {
-    margin-bottom: 0.5rem;
-  }
-
-  .status-item {
-    flex-wrap: wrap;
-  }
-
-  .status-label {
-    width: 100%;
-    margin-bottom: 0.25rem;
-  }
-
-  .status-bar {
-    margin: 0 0.5rem;
-  }
+.quick-actions .el-button {
+  width: 100%;
+  justify-content: flex-start;
 }
 </style>

@@ -1,110 +1,82 @@
 package middleware
 
 import (
-	"fmt"
 	"gin_pipeline/global"
-	"time"
-
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"net"
+	"net/http"
+	"net/http/httputil"
+	"os"
+	"runtime/debug"
+	"strings"
+	"time"
 )
 
-// 定义颜色常量
-const (
-	colorReset  = "\033[0m"
-	colorRed    = "\033[31m"
-	colorGreen  = "\033[32m"
-	colorYellow = "\033[33m"
-	colorBlue   = "\033[34m"
-	colorPurple = "\033[35m"
-	colorCyan   = "\033[36m"
-	colorWhite  = "\033[37m"
-)
-
-// 获取状态码对应的颜色
-func getStatusColor(code int) string {
-	switch {
-	case code >= 200 && code < 300:
-		return colorGreen // 成功状态码使用绿色
-	case code >= 300 && code < 400:
-		return colorCyan // 重定向状态码使用青色
-	case code >= 400 && code < 500:
-		return colorYellow // 客户端错误使用黄色
-	default:
-		return colorRed // 服务器错误使用红色
-	}
-}
-
-// 获取HTTP方法对应的颜色
-func getMethodColor(method string) string {
-	switch method {
-	case "GET":
-		return colorBlue
-	case "POST":
-		return colorGreen
-	case "PUT":
-		return colorYellow
-	case "DELETE":
-		return colorRed
-	case "PATCH":
-		return colorPurple
-	case "HEAD":
-		return colorCyan
-	case "OPTIONS":
-		return colorWhite
-	default:
-		return colorReset
-	}
-}
-
-// Logger 日志中间件
-func Logger() gin.HandlerFunc {
+// GinLogger 接收gin框架默认的日志
+func GinLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 开始时间
-		startTime := time.Now()
-
-		// 处理请求
+		start := time.Now()
+		path := c.Request.URL.Path
+		query := c.Request.URL.RawQuery
 		c.Next()
 
-		// 结束时间
-		endTime := time.Now()
-
-		// 执行时间
-		latency := endTime.Sub(startTime)
-
-		// 请求方式
-		reqMethod := c.Request.Method
-
-		// 请求路由
-		reqUri := c.Request.RequestURI
-
-		// 状态码
-		statusCode := c.Writer.Status()
-
-		// 请求IP
-		clientIP := c.ClientIP()
-
-		// 状态码颜色
-		statusColor := getStatusColor(statusCode)
-
-		// 方法颜色
-		methodColor := getMethodColor(reqMethod)
-
-		// 日志格式 - 使用彩色输出
-		logMsg := fmt.Sprintf("| %s%3d%s | %13v | %15s | %s%s%s | %s |",
-			statusColor, statusCode, colorReset,
-			latency,
-			clientIP,
-			methodColor, reqMethod, colorReset,
-			reqUri,
+		cost := time.Since(start)
+		global.Log.Info(path,
+			zap.Int("status", c.Writer.Status()),
+			zap.String("method", c.Request.Method),
+			zap.String("path", path),
+			zap.String("query", query),
+			zap.String("ip", c.ClientIP()),
+			zap.String("user-agent", c.Request.UserAgent()),
+			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
+			zap.Duration("cost", cost),
 		)
+	}
+}
 
-		// 根据状态码选择日志级别
-		if statusCode >= 500 {
-			global.Logger.Error(logMsg)
-		} else if statusCode >= 400 {
-			global.Logger.Warn(logMsg)
-		} else {
-			global.Logger.Info(logMsg)
-		}
+// GinRecovery recover掉项目可能出现的panic
+func GinRecovery(stack bool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				// 检查是否连接中断
+				var brokenPipe bool
+				if ne, ok := err.(*net.OpError); ok {
+					if se, ok := ne.Err.(*os.SyscallError); ok {
+						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
+							brokenPipe = true
+						}
+					}
+				}
+
+				httpRequest, _ := httputil.DumpRequest(c.Request, false)
+				if brokenPipe {
+					global.Log.Error(c.Request.URL.Path,
+						zap.Any("error", err),
+						zap.String("request", string(httpRequest)),
+					)
+					// 如果连接已断开，无法写入状态
+					c.Error(err.(error))
+					c.Abort()
+					return
+				}
+
+				if stack {
+					global.Log.Error("[Recovery from panic]",
+						zap.Any("error", err),
+						zap.String("request", string(httpRequest)),
+						zap.String("stack", string(debug.Stack())),
+					)
+				} else {
+					global.Log.Error("[Recovery from panic]",
+						zap.Any("error", err),
+						zap.String("request", string(httpRequest)),
+					)
+				}
+				c.AbortWithStatus(http.StatusInternalServerError)
+			}
+		}()
+		c.Next()
 	}
 }

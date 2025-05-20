@@ -1,0 +1,143 @@
+:root {
+    --el-color-primary: #409eff;
+    --el-color-success: #67c23a;
+    --el-color-warning: #e6a23c;
+    --el-color-danger: #f56c6c;
+    --el-color-info: #909399;
+
+    --sidebar-width: 220px;
+    --header-height: 60px;
+    --footer-height: 40px;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    color: #333;
+    background-color: #f5f7fa;
+}
+
+#app {
+    height: 100%;
+}
+
+.app-container {
+    padding: 20px;
+}
+
+.app-layout {
+    height: 100%;
+
+    .el-header {
+        padding: 0;
+        height: var(--header-height);
+        background-color: #fff;
+        box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+        position: relative;
+        z-index: 10;
+    }
+
+    .el-aside {
+        width: var(--sidebar-width);
+        background-color: #304156;
+        transition: width 0.3s;
+        overflow-x: hidden;
+
+        &.is-collapsed {
+            width: 64px;
+        }
+    }
+
+    .el-main {
+        padding: 20px;
+        background-color: #f5f7fa;
+        overflow-y: auto;
+    }
+}
+
+.pipeline-card {
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    }
+}
+
+.pipeline-stage {
+    margin-bottom: 15px;
+
+    .stage-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+
+        .stage-name {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .stage-status {
+            margin-left: auto;
+        }
+    }
+
+    .stage-jobs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
+
+.job-card {
+    width: 200px;
+
+    &.success {
+        border-left: 4px solid var(--el-color-success);
+    }
+
+    &.running {
+        border-left: 4px solid var(--el-color-primary);
+    }
+
+    &.failed {
+        border-left: 4px solid var(--el-color-danger);
+    }
+
+    &.pending {
+        border-left: 4px solid var(--el-color-info);
+    }
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+
+    &.success {
+        background-color: rgba(103, 194, 58, 0.1);
+        color: var(--el-color-success);
+    }
+
+    &.running {
+        background-color: rgba(64, 158, 255, 0.1);
+        color: var(--el-color-primary);
+    }
+
+    &.failed {
+        background-color: rgba(245, 108, 108, 0.1);
+        color: var(--el-color-danger);
+    }
+
+    &.pending {
+        background-color: rgba(144, 147, 153, 0.1);
+        color: var(--el-color-info);
+    }
+}

@@ -1,84 +1,108 @@
-import { createRouter, createWebHistory} from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
+import { createRouter, createWebHistory } from "vue-router"
+import { useAuthStore } from "@/stores/auth"
+import AppLayout from "@/components/layout/AppLayout.vue"
 
-// 定义路由配置
 const routes = [
     {
-        path: '/',
-        component: () => import('@/layouts/DefaultLayout.vue'),
-        children: [
-            {
-                path: '',
-                name: 'Home',
-                component: () => import('@/views/Home.vue'),
-                meta: { title: '首页' }
-            },
-            {
-                path: 'dashboard',
-                name: 'Dashboard',
-                component: () => import('@/views/Dashboard.vue'),
-                meta: { requiresAuth: true, title: '仪表盘' }
-            },
-            {
-                path: 'profile',
-                name: 'Profile',
-                component: () => import('@/views/Profile.vue'),
-                meta: { requiresAuth: true, title: '个人资料' }
-            }
-        ]
+        path: "/login",
+        name: "Login",
+        component: () => import("@/views/Login.vue"),
+        meta: { requiresAuth: false, title: "登录" },
     },
     {
-        path: '/auth',
-        component: () => import('@/layouts/AuthLayout.vue'),
+        path: "/",
+        component: AppLayout,
+        redirect: "/dashboard",
         children: [
             {
-                path: 'login',
-                name: 'Login',
-                component: () => import('@/views/auth/Login.vue'),
-                meta: { title: '登录' }
+                path: "dashboard",
+                name: "Dashboard",
+                component: () => import("@/views/Dashboard.vue"),
+                meta: { requiresAuth: true, title: "仪表盘" },
             },
             {
-                path: 'register',
-                name: 'Register',
-                component: () => import('@/views/auth/Register.vue'),
-                meta: { title: '注册' }
-            }
-        ]
+                path: "pipelines",
+                name: "Pipelines",
+                component: () => import("@/views/pipeline/PipelineList.vue"),
+                meta: { requiresAuth: true, title: "流水线列表" },
+            },
+            {
+                path: "pipeline/:id",
+                name: "PipelineDetail",
+                component: () => import("@/views/pipeline/PipelineDetail.vue"),
+                meta: { requiresAuth: true, title: "流水线详情" },
+            },
+            {
+                path: "pipeline/create",
+                name: "PipelineCreate",
+                component: () => import("@/views/pipeline/PipelineCreate.vue"),
+                meta: { requiresAuth: true, title: "创建流水线" },
+            },
+            {
+                path: "builds/history",
+                name: "BuildHistory",
+                component: () => import("@/views/build/BuildHistory.vue"),
+                meta: { requiresAuth: true, title: "构建历史" },
+            },
+            {
+                path: "builds/templates",
+                name: "BuildTemplates",
+                component: () => import("@/views/build/BuildTemplates.vue"),
+                meta: { requiresAuth: true, title: "构建模板" },
+            },
+            {
+                path: "deploy/environments",
+                name: "Environments",
+                component: () => import("@/views/deploy/Environments.vue"),
+                meta: { requiresAuth: true, title: "环境管理" },
+            },
+            {
+                path: "deploy/releases",
+                name: "Releases",
+                component: () => import("@/views/deploy/Releases.vue"),
+                meta: { requiresAuth: true, title: "发布记录" },
+            },
+            {
+                path: "artifacts",
+                name: "Artifacts",
+                component: () => import("@/views/artifact/ArtifactList.vue"),
+                meta: { requiresAuth: true, title: "制品管理" },
+            },
+            {
+                path: "settings",
+                name: "Settings",
+                component: () => import("@/views/settings/Settings.vue"),
+                meta: { requiresAuth: true, title: "系统设置" },
+            },
+            {
+                path: "profile",
+                name: "Profile",
+                component: () => import("@/views/Profile.vue"),
+                meta: { requiresAuth: true, title: "个人资料" },
+            },
+        ],
     },
     {
-        path: '/:pathMatch(.*)*',
-        name: 'NotFound',
-        component: () => import('@/views/NotFound.vue'),
-        meta: { title: '页面未找到' }
-    }
-];
+        path: "/:pathMatch(.*)*",
+        name: "NotFound",
+        component: () => import("@/views/NotFound.vue"),
+    },
+]
 
-// 创建路由实例
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
-    routes
-});
+    history: createWebHistory(),
+    routes,
+})
 
-// 全局前置守卫
 router.beforeEach((to, from, next) => {
-    const authStore = useAuthStore();
-    // 设置页面标题
-    document.title = to.meta?.title ? `${to.meta.title} - 企业应用` : '企业应用';
+    const authStore = useAuthStore()
+    const requiresAuth = to.matched.some((record) => record.meta.requiresAuth !== false)
 
-    // 检查是否需要认证
-    if (to.matched.some(record => record.meta?.requiresAuth)) {
-        // 如果未登录，重定向到登录页
-        if (!authStore.isAuthenticated) {
-            next({
-                path: '/auth/login',
-                query: { redirect: to.fullPath }
-            });
-        } else {
-            next();
-        }
+    if (requiresAuth && !authStore.isAuthenticated) {
+        next("/login")
     } else {
-        next();
+        next()
     }
-});
+})
 
-export default router;
+export default router

@@ -1,9 +1,139 @@
 basePath: /api/v1
 definitions:
-  v1.ChangePasswordRequest:
+  model.Job:
+    properties:
+      command:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      name:
+        type: string
+      stage_id:
+        type: integer
+      timeout:
+        description: 超时时间(秒)
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  model.Pipeline:
+    properties:
+      created_at:
+        type: string
+      creator:
+        $ref: '#/definitions/model.User'
+      creator_id:
+        type: integer
+      description:
+        type: string
+      git_branch:
+        type: string
+      git_repo:
+        type: string
+      id:
+        type: integer
+      last_run_at:
+        type: string
+      name:
+        type: string
+      stages:
+        items:
+          $ref: '#/definitions/model.Stage'
+        type: array
+      status:
+        description: inactive, active, running, success, failed
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.PipelineRun:
+    properties:
+      created_at:
+        type: string
+      duration:
+        description: 持续时间(秒)
+        type: integer
+      end_time:
+        type: string
+      git_branch:
+        type: string
+      git_commit:
+        type: string
+      id:
+        type: integer
+      logs:
+        type: string
+      pipeline:
+        $ref: '#/definitions/model.Pipeline'
+      pipeline_id:
+        type: integer
+      start_time:
+        type: string
+      status:
+        description: pending, running, success, failed, canceled
+        type: string
+      trigger_by:
+        type: integer
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
+  model.Stage:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      jobs:
+        items:
+          $ref: '#/definitions/model.Job'
+        type: array
+      name:
+        type: string
+      order:
+        type: integer
+      pipeline_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  model.User:
+    properties:
+      avatar:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      last_login:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      role:
+        description: admin, user
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  request.ChangePassword:
     properties:
       newPassword:
-        maxLength: 32
+        maxLength: 20
         minLength: 6
         type: string
       oldPassword:
@@ -12,7 +142,49 @@ definitions:
     - newPassword
     - oldPassword
     type: object
-  v1.LoginRequest:
+  request.CreatePipeline:
+    properties:
+      description:
+        type: string
+      git_branch:
+        default: main
+        type: string
+      git_repo:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      stages:
+        items:
+          $ref: '#/definitions/request.Stage'
+        minItems: 1
+        type: array
+    required:
+    - git_repo
+    - name
+    - stages
+    type: object
+  request.Job:
+    properties:
+      command:
+        type: string
+      description:
+        type: string
+      image:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      timeout:
+        default: 3600
+        type: integer
+    required:
+    - command
+    - name
+    type: object
+  request.Login:
     properties:
       password:
         type: string
@@ -22,282 +194,574 @@ definitions:
     - password
     - username
     type: object
-  v1.RegisterRequest:
-    properties:
-      email:
-        type: string
-      password:
-        maxLength: 32
-        minLength: 6
-        type: string
-      username:
-        maxLength: 32
-        minLength: 3
-        type: string
-    required:
-    - email
-    - password
-    - username
-    type: object
-  v1.UpdateUserRequest:
+  request.Register:
     properties:
       email:
         type: string
       name:
         maxLength: 50
+        minLength: 2
+        type: string
+      password:
+        maxLength: 20
+        minLength: 6
+        type: string
+      phone:
+        type: string
+      username:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - username
+    type: object
+  request.Stage:
+    properties:
+      description:
+        type: string
+      jobs:
+        items:
+          $ref: '#/definitions/request.Job'
+        minItems: 1
+        type: array
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      order:
+        type: integer
+    required:
+    - jobs
+    - name
+    type: object
+  request.TriggerPipeline:
+    properties:
+      git_branch:
+        type: string
+    type: object
+  request.UpdatePipeline:
+    properties:
+      description:
+        type: string
+      git_branch:
+        default: main
+        type: string
+      git_repo:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      status:
+        type: string
+    required:
+    - git_repo
+    - name
+    type: object
+  request.UpdateUserInfo:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      name:
+        maxLength: 50
+        minLength: 2
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  response.PageResult:
+    properties:
+      list: {}
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
         type: string
     type: object
 host: localhost:8080
 info:
   contact:
-    email: support@example.com
+    email: support@swagger.io
     name: API Support
-    url: http://www.example.com/support
-  description: Enterprise API Server
+    url: http://www.swagger.io/support
+  description: CI/CD Pipeline Visualization Platform API
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Enterprise API
+  title: CI/CD Pipeline Visualization API
   version: "1.0"
 paths:
-  /auth/login:
+  /pipeline:
+    get:
+      consumes:
+      - application/json
+      description: 获取流水线列表，支持分页
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.Pipeline'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取流水线列表
+      tags:
+      - 流水线管理
     post:
       consumes:
       - application/json
-      description: Login with username and password
+      description: 创建新的流水线
       parameters:
-      - description: Login credentials
+      - description: 流水线信息
         in: body
-        name: request
+        name: data
         required: true
         schema:
-          $ref: '#/definitions/v1.LoginRequest'
+          $ref: '#/definitions/request.CreatePipeline'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 创建成功
           schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: User login
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Pipeline'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建流水线
       tags:
-      - auth
-  /auth/register:
+      - 流水线管理
+  /pipeline/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除流水线
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除流水线
+      tags:
+      - 流水线管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取流水线详情
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Pipeline'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取流水线详情
+      tags:
+      - 流水线管理
+    put:
+      consumes:
+      - application/json
+      description: 更新流水线信息
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 流水线信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdatePipeline'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Pipeline'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 更新流水线
+      tags:
+      - 流水线管理
+  /pipeline/{id}/runs:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定流水线的运行记录
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.PipelineRun'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取流水线运行记录
+      tags:
+      - 流水线管理
+  /pipeline/{id}/runs/{runId}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定流水线运行记录的详情
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 运行记录ID
+        in: path
+        name: runId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PipelineRun'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取流水线运行记录详情
+      tags:
+      - 流水线管理
+  /pipeline/{id}/runs/{runId}/cancel:
     post:
       consumes:
       - application/json
-      description: Register a new user
+      description: 取消指定的流水线运行
       parameters:
-      - description: Registration information
-        in: body
-        name: request
+      - description: 流水线ID
+        in: path
+        name: id
         required: true
+        type: integer
+      - description: 运行记录ID
+        in: path
+        name: runId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 取消成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 取消流水线运行
+      tags:
+      - 流水线管理
+  /pipeline/{id}/runs/{runId}/logs:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定流水线运行记录的日志
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 运行记录ID
+        in: path
+        name: runId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取流水线运行日志
+      tags:
+      - 流水线管理
+  /pipeline/{id}/trigger:
+    post:
+      consumes:
+      - application/json
+      description: 触发流水线执行
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 触发参数
+        in: body
+        name: data
         schema:
-          $ref: '#/definitions/v1.RegisterRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "409":
-          description: Conflict
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: User registration
-      tags:
-      - auth
-  /health:
-    get:
-      consumes:
-      - application/json
-      description: Check if the API is running
+          $ref: '#/definitions/request.TriggerPipeline'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 触发成功
           schema:
-            additionalProperties: true
-            type: object
-      summary: Health check endpoint
-      tags:
-      - system
-  /system/config:
-    get:
-      consumes:
-      - application/json
-      description: Get public system configuration
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PipelineRun'
+              type: object
       security:
       - BearerAuth: []
-      summary: Get system configuration
+      summary: 触发流水线
       tags:
-      - system
-  /users/me:
+      - 流水线管理
+  /user/info:
     get:
       consumes:
       - application/json
-      description: Get the current user's information
+      description: 获取当前登录用户信息
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 获取成功
           schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
       security:
       - BearerAuth: []
-      summary: Get current user info
+      summary: 获取用户信息
       tags:
-      - users
+      - 用户管理
     put:
       consumes:
       - application/json
-      description: Update the current user's information
+      description: 更新当前登录用户信息
       parameters:
-      - description: User information
+      - description: 用户信息
         in: body
-        name: request
+        name: data
         required: true
         schema:
-          $ref: '#/definitions/v1.UpdateUserRequest'
+          $ref: '#/definitions/request.UpdateUserInfo'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 更新成功
           schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
       security:
       - BearerAuth: []
-      summary: Update user info
+      summary: 更新用户信息
       tags:
-      - users
-  /users/password:
+      - 用户管理
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录接口
+      parameters:
+      - description: 用户登录信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登录成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+      summary: 用户登录
+      tags:
+      - 用户管理
+  /user/password:
     put:
       consumes:
       - application/json
-      description: Change the current user's password
+      description: 修改当前登录用户密码
       parameters:
-      - description: Password information
+      - description: 密码信息
         in: body
-        name: request
+        name: data
         required: true
         schema:
-          $ref: '#/definitions/v1.ChangePasswordRequest'
+          $ref: '#/definitions/request.ChangePassword'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 修改成功
           schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/response.Response'
       security:
       - BearerAuth: []
-      summary: Change password
+      summary: 修改密码
       tags:
-      - users
+      - 用户管理
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户注册接口
+      parameters:
+      - description: 用户注册信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.Register'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注册成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+      summary: 用户注册
+      tags:
+      - 用户管理
 securityDefinitions:
   BearerAuth:
     in: header
