@@ -58,13 +58,16 @@ func InitRouter() *gin.Engine {
 
 	// 注册路由
 	apiGroup := r.Group("/api/v1")
-	router.InitPublicRouter(apiGroup)        // 公共路由
-	router.InitUserRouter(apiGroup)          // 用户路由
-	router.InitPipelineRouter(apiGroup)      // 流水线路由
-	router.InitArtifactRouter(apiGroup)      // 制品路由
-	router.InitEnvironmentRouter(apiGroup)   // 环境路由
-	router.InitReleaseRouter(apiGroup)       // 发布路由
-	router.InitBuildTemplateRouter(apiGroup) // 构建模板路由
+	router.InitPublicRouter(apiGroup)         // 公共路由
+	router.InitUserRouter(apiGroup)           // 用户路由
+	router.InitPipelineRouter(apiGroup)       // 流水线路由
+	router.InitArtifactRouter(apiGroup)       // 制品路由
+	router.InitEnvironmentRouter(apiGroup)    // 环境路由
+	router.InitReleaseRouter(apiGroup)        // 发布路由
+	router.InitBuildTemplateRouter(apiGroup)  // 构建模板路由
+	router.InitDAGRouter(apiGroup)            // DAG路由
+	router.InitYAMLValidatorRouter(apiGroup)  // YAML验证路由
+	router.InitTemplateMarketRouter(apiGroup) // 模板市场路由
 
 	global.Log.Info("路由注册成功")
 	return r

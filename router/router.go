@@ -98,3 +98,64 @@ func InitBuildTemplateRouter(Router *gin.RouterGroup) {
 		BuildTemplateRouter.POST("/:id/apply", v1.ApplyBuildTemplate)
 	}
 }
+
+// InitDAGRouter 初始化DAG路由
+func InitDAGRouter(Router *gin.RouterGroup) {
+	DAGRouter := Router.Group("/dag").Use(middleware.JWTAuth())
+	{
+		DAGRouter.POST("", v1.CreateDAG)
+		DAGRouter.GET("/:id", v1.GetDAGByID)
+		DAGRouter.GET("/pipeline/:pipelineId", v1.GetDAGsByPipelineID)
+		DAGRouter.GET("/pipeline/:pipelineId/active", v1.GetActiveDAG)
+		DAGRouter.PUT("/:id", v1.UpdateDAG)
+		DAGRouter.DELETE("/:id", v1.DeleteDAG)
+		DAGRouter.POST("/validate", v1.ValidateDAG)
+		DAGRouter.POST("/:id/version", v1.CreateDAGVersion)
+		DAGRouter.GET("/pipeline/:pipelineId/history", v1.GetDAGHistory)
+		DAGRouter.POST("/:id/activate", v1.ActivateDAG)
+	}
+}
+
+// InitYAMLValidatorRouter 初始化YAML验证路由
+func InitYAMLValidatorRouter(Router *gin.RouterGroup) {
+	YAMLRouter := Router.Group("/yaml").Use(middleware.JWTAuth())
+	{
+		YAMLRouter.POST("/validate", v1.ValidateYAML)
+		YAMLRouter.GET("/history", v1.GetValidationHistory)
+		YAMLRouter.POST("/schema", v1.CreateYAMLSchema)
+		YAMLRouter.GET("/schema", v1.GetYAMLSchemas)
+		YAMLRouter.GET("/schema/:id", v1.GetYAMLSchemaByID)
+		YAMLRouter.PUT("/schema/:id", v1.UpdateYAMLSchema)
+		YAMLRouter.DELETE("/schema/:id", v1.DeleteYAMLSchema)
+	}
+}
+
+// InitTemplateMarketRouter 初始化模板市场路由
+func InitTemplateMarketRouter(Router *gin.RouterGroup) {
+	TemplateMarketRouter := Router.Group("/template-market").Use(middleware.JWTAuth())
+	{
+		// 分类管理
+		TemplateMarketRouter.POST("/category", v1.CreateTemplateCategory)
+		TemplateMarketRouter.GET("/category", v1.GetTemplateCategories)
+		TemplateMarketRouter.PUT("/category/:id", v1.UpdateTemplateCategory)
+		TemplateMarketRouter.DELETE("/category/:id", v1.DeleteTemplateCategory)
+
+		// 模板管理
+		TemplateMarketRouter.POST("/template", v1.CreateTemplate)
+		TemplateMarketRouter.GET("/template", v1.GetTemplates)
+		TemplateMarketRouter.GET("/template/:id", v1.GetTemplateByID)
+		TemplateMarketRouter.PUT("/template/:id", v1.UpdateTemplate)
+		TemplateMarketRouter.DELETE("/template/:id", v1.DeleteTemplate)
+
+		// 版本管理
+		TemplateMarketRouter.POST("/template/:id/version", v1.CreateTemplateVersion)
+		TemplateMarketRouter.GET("/template/:id/version", v1.GetTemplateVersions)
+		TemplateMarketRouter.GET("/template/:id/version/:versionId", v1.GetTemplateVersionByID)
+		TemplateMarketRouter.DELETE("/template/:id/version/:versionId", v1.DeleteTemplateVersion)
+		TemplateMarketRouter.POST("/template/:id/version/:versionId/latest", v1.SetVersionAsLatest)
+
+		// 搜索和下载
+		TemplateMarketRouter.GET("/search", v1.SearchTemplates)
+		TemplateMarketRouter.GET("/template/:id/download", v1.DownloadTemplate)
+	}
+}

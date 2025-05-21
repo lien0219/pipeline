@@ -87,6 +87,12 @@ func InitDB() {
 		&model.Environment{},
 		&model.Release{},
 		&model.BuildTemplate{},
+		&model.DAG{},
+		&model.YAMLValidation{},
+		&model.YAMLSchema{},
+		&model.TemplateCategory{},
+		&model.Template{},
+		&model.TemplateVersion{},
 	)
 	if err != nil {
 		global.Log.Error("自动迁移失败", zap.Any("err", err))

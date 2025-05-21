@@ -178,3 +178,20 @@ EXPOSE 8080
 
 # 运行
 CMD ["./gin_pipeline"]
+
+# -------------------------------解释部分文件---------------------------------
+`resources/schemas/kubernetes/` 目录下的JSON文件是YAML校验引擎功能的核心组件。这些文件是JSON Schema定义，用于验证Kubernetes资源的YAML配置是否符合规范。具体来说：
+
+1. **`deployment.json`** - 这是Kubernetes Deployment资源的JSON Schema定义，用于验证Deployment YAML配置的正确性。它定义了Deployment资源必须包含的字段（如apiVersion、kind、metadata、spec等）以及各字段的数据类型、格式要求和约束条件。
+2. **`service.json`** - 这是Kubernetes Service资源的JSON Schema定义，用于验证Service YAML配置的正确性。它定义了Service资源的必要字段和格式要求，如端口配置、选择器等。
+3. **`general.json`** - 这是一个通用的Kubernetes资源JSON Schema定义，用于验证不在特定类型中的其他Kubernetes资源。它定义了所有Kubernetes资源共有的基本结构。
+
+
+这些Schema文件的作用是：
+
+- **提供验证标准**：当用户提交Kubernetes YAML配置时，YAML校验引擎会根据这些Schema定义验证配置的正确性
+- **防止错误配置**：在部署前捕获配置错误，避免将错误的配置部署到生产环境
+- **提供自动补全和提示**：可以基于这些Schema为用户提供编辑YAML时的字段提示和自动补全功能
+
+
+在CI/CD流程中，这些Schema文件被`yaml_validator.go`服务使用，以确保流水线中的Kubernetes配置在部署前是有效的，从而提高部署的成功率和系统的稳定性。

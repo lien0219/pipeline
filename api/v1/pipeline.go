@@ -5,6 +5,7 @@ import (
 	"gin_pipeline/model"
 	"gin_pipeline/model/request"
 	"gin_pipeline/model/response"
+	"gin_pipeline/service"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -301,83 +302,6 @@ func DeletePipeline(c *gin.Context) {
 	response.OkWithMessage("删除流水线成功", c)
 }
 
-// TriggerPipeline 触发流水线
-// @Summary 触发流水线
-// @Description 触发流水线执行
-// @Tags 流水线管理
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param id path int true "流水线ID"
-// @Param data body request.TriggerPipeline false "触发参数"
-// @Success 200 {object} response.Response{data=model.PipelineRun} "触发成功"
-// @Router /pipeline/{id}/trigger [post]
-func TriggerPipeline(c *gin.Context) {
-	id := c.Param("id")
-	var req request.TriggerPipeline
-	if err := c.ShouldBindJSON(&req); err != nil {
-		// 忽略绑定错误，使用默认值
-	}
-
-	// 从上下文获取用户ID
-	userID := c.GetUint("userId")
-	if userID == 0 {
-		response.FailWithMessage("触发流水线失败", c)
-		return
-	}
-
-	// 查询流水线
-	var pipeline model.Pipeline
-	if err := global.DB.First(&pipeline, id).Error; err != nil {
-		global.Log.Error("查询流水线失败", zap.Error(err))
-		response.FailWithMessage("触发流水线失败", c)
-		return
-	}
-
-	// 使用指定的分支或默认分支
-	gitBranch := req.GitBranch
-	if gitBranch == "" {
-		gitBranch = pipeline.GitBranch
-	}
-
-	// 创建流水线运行记录
-	now := time.Now()
-	pipelineRun := model.PipelineRun{
-		PipelineID: pipeline.ID,
-		Status:     "pending",
-		StartTime:  &now,
-		GitBranch:  gitBranch,
-		TriggerBy:  userID,
-	}
-
-	if err := global.DB.Create(&pipelineRun).Error; err != nil {
-		global.Log.Error("创建流水线运行记录失败", zap.Error(err))
-		response.FailWithMessage("触发流水线失败", c)
-		return
-	}
-
-	// 更新流水线状态
-	if err := global.DB.Model(&pipeline).Updates(map[string]interface{}{
-		"status":      "running",
-		"last_run_at": now,
-	}).Error; err != nil {
-		global.Log.Error("更新流水线状态失败", zap.Error(err))
-		// 不影响结果，继续执行
-	}
-
-	// 查询完整的运行记录
-	if err := global.DB.Preload("Pipeline").Preload("User").First(&pipelineRun, pipelineRun.ID).Error; err != nil {
-		global.Log.Error("查询流水线运行记录失败", zap.Error(err))
-		response.FailWithMessage("触发流水线成功，但获取详情失败", c)
-		return
-	}
-
-	// 异步执行流水线（实际项目中应该使用消息队列或工作线程）
-	go executePipeline(pipelineRun.ID)
-
-	response.OkWithData(pipelineRun, c)
-}
-
 // 异步执行流水线（模拟）
 func executePipeline(runID uint) {
 	// 查询运行记录
@@ -532,6 +456,66 @@ func GetPipelineRunLogs(c *gin.Context) {
 	response.OkWithData(data, c)
 }
 
+// TriggerPipeline 触发流水线
+// @Summary 触发流水线
+// @Description 触发流水线执行
+// @Tags 流水线管理
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "流水线ID"
+// @Param data body request.TriggerPipeline false "触发参数"
+// @Success 200 {object} response.Response{data=model.PipelineRun} "触发成功"
+// @Router /pipeline/{id}/trigger [post]
+func TriggerPipeline(c *gin.Context) {
+	id := c.Param("id")
+	var req request.TriggerPipeline
+	if err := c.ShouldBindJSON(&req); err != nil {
+		// 忽略绑定错误，使用默认值
+	}
+
+	// 从上下文获取用户ID
+	userID := c.GetUint("userId")
+	if userID == 0 {
+		response.FailWithMessage("触发流水线失败", c)
+		return
+	}
+
+	// 查询流水线
+	var pipeline model.Pipeline
+	if err := global.DB.First(&pipeline, id).Error; err != nil {
+		global.Log.Error("查询流水线失败", zap.Error(err))
+		response.FailWithMessage("触发流水线失败", c)
+		return
+	}
+
+	// 使用指定的分支或默认分支
+	gitBranch := req.GitBranch
+	if gitBranch == "" {
+		gitBranch = pipeline.GitBranch
+	}
+
+	// 使用工作流服务触发流水线
+	workflowService := service.NewWorkflowService()
+	pipelineRun, err := workflowService.TriggerWorkflow(pipeline.ID, userID, gitBranch)
+	if err != nil {
+		global.Log.Error("触发流水线失败", zap.Error(err))
+		response.FailWithMessage("触发流水线失败: "+err.Error(), c)
+		return
+	}
+
+	// 查询完整的运行记录
+	if err := global.DB.Preload("Pipeline").Preload("User").First(pipelineRun, pipelineRun.ID).Error; err != nil {
+		global.Log.Error("查询流水线运行记录失败", zap.Error(err))
+		response.FailWithMessage("触发流水线成功，但获取详情失败", c)
+		return
+	}
+
+	response.OkWithData(pipelineRun, c)
+}
+
+// 修改CancelPipelineRun函数，使用工作流服务
+
 // CancelPipelineRun 取消流水线运行
 // @Summary 取消流水线运行
 // @Description 取消指定的流水线运行
@@ -561,21 +545,11 @@ func CancelPipelineRun(c *gin.Context) {
 		return
 	}
 
-	// 更新状态
-	now := time.Now()
-	updates := map[string]interface{}{
-		"status":   "canceled",
-		"end_time": now,
-	}
-
-	// 如果有开始时间，计算持续时间
-	if run.StartTime != nil {
-		updates["duration"] = int(now.Sub(*run.StartTime).Seconds())
-	}
-
-	if err := global.DB.Model(&run).Updates(updates).Error; err != nil {
-		global.Log.Error("更新流水线运行状态失败", zap.Error(err))
-		response.FailWithMessage("取消流水线运行失败", c)
+	// 使用工作流服务取消流水线
+	workflowService := service.NewWorkflowService()
+	if err := workflowService.CancelWorkflow(run.ID); err != nil {
+		global.Log.Error("取消流水线运行失败", zap.Error(err))
+		response.FailWithMessage("取消流水线运行失败: "+err.Error(), c)
 		return
 	}
 
