@@ -354,7 +354,7 @@ const fetchTemplates = async () => {
 // 获取流水线列表（用于使用模板）
 const fetchPipelines = async () => {
   try {
-    const response = await pipelineStore.fetchPipelines({ limit: 100 });
+    const response = await pipelineStore.fetchPipelines({ page:1,pageSize:10 });
     pipelines.value = response.data || [];
   } catch (error) {
     console.error('Failed to fetch pipelines:', error);

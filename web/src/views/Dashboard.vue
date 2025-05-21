@@ -218,7 +218,7 @@ const fetchData = async () => {
   loading.value = true;
   try {
     // 获取流水线数据
-    const response = await pipelineStore.fetchPipelines({ limit: 5 });
+    const response = await pipelineStore.fetchPipelines({ page:1,pageSize:10 });
     recentPipelines.value = response.data || [];
 
     // 统计数据

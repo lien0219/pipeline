@@ -3,6 +3,7 @@ package main
 import (
 	"gin_pipeline/global"
 	"gin_pipeline/initialize"
+	"gin_pipeline/utils"
 )
 
 // @title           CI/CD Pipeline Visualization API
@@ -29,24 +30,24 @@ func main() {
 
 	// 初始化日志
 	initialize.InitLogger()
-	global.Log.Info("日志系统初始化成功")
+	utils.Success("日志系统初始化成功")
 
 	// 初始化数据库
 	initialize.InitDB()
-	global.Log.Info("数据库连接初始化成功")
+	utils.Success("数据库连接初始化成功")
 
 	// 初始化Redis
 	initialize.InitRedis()
-	global.Log.Info("Redis连接初始化成功")
+	utils.Success("Redis连接初始化成功")
 
 	// 初始化路由
 	r := initialize.InitRouter()
-	global.Log.Info("路由初始化成功")
+	utils.Success("路由初始化成功")
 
 	// 启动服务器
 	port := global.Config.System.Port
-	global.Log.Infof("服务器启动成功，监听端口: %s", port)
+	utils.Info("服务器启动成功，监听端口: %s", port)
 	if err := r.Run(":" + port); err != nil {
-		global.Log.Fatalf("服务器启动失败: %v", err)
+		utils.Error("服务器启动失败: %v", err)
 	}
 }

@@ -2,7 +2,7 @@ import http from "./http"
 
 export const pipelineApi = {
     getPipelines(params) {
-        return http.get("/pipelines", { params })
+        return http.get("/v1/pipeline", { params })
     },
 
     getPipelineById(id) {

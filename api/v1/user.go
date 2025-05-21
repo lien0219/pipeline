@@ -49,12 +49,13 @@ func Register(c *gin.Context) {
 
 	// 创建用户
 	user := model.User{
-		Username: req.Username,
-		Password: hashedPassword,
-		Name:     req.Name,
-		Email:    req.Email,
-		Phone:    req.Phone,
-		Role:     "user", // 默认角色
+		Username:  req.Username,
+		Password:  hashedPassword,
+		Name:      req.Name,
+		Email:     req.Email,
+		Phone:     req.Phone,
+		Role:      "user", // 默认角色
+		LastLogin: time.Now(),
 	}
 
 	if err := global.DB.Create(&user).Error; err != nil {

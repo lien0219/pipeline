@@ -8,7 +8,6 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
-	_ "path"
 	"time"
 )
 
@@ -54,7 +53,7 @@ func InitLogger() {
 
 // getEncoderConfig 获取zapcore.EncoderConfig
 func getEncoderConfig() zapcore.EncoderConfig {
-	return zapcore.EncoderConfig{
+	config := zapcore.EncoderConfig{
 		MessageKey:     "message",
 		LevelKey:       "level",
 		TimeKey:        "time",
@@ -62,11 +61,19 @@ func getEncoderConfig() zapcore.EncoderConfig {
 		CallerKey:      "caller",
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.LowercaseLevelEncoder,
 		EncodeTime:     customTimeEncoder,
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
+
+	// 添加彩色日志输出
+	if global.Config.Log.LogInConsole {
+		config.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	} else {
+		config.EncodeLevel = zapcore.CapitalLevelEncoder
+	}
+
+	return config
 }
 
 // customTimeEncoder 自定义日志输出时间格式

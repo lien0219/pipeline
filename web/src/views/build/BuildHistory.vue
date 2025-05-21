@@ -249,7 +249,7 @@ const fetchBuildHistory = async () => {
 // 获取流水线列表（用于筛选）
 const fetchPipelines = async () => {
   try {
-    const response = await pipelineStore.fetchPipelines({ limit: 100 });
+    const response = await pipelineStore.fetchPipelines({ page:1,pageSize:10 });
     pipelines.value = response.data || [];
   } catch (error) {
     console.error('Failed to fetch pipelines:', error);

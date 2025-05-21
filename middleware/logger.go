@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"gin_pipeline/global"
+	"gin_pipeline/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net"
@@ -22,14 +23,41 @@ func GinLogger() gin.HandlerFunc {
 		c.Next()
 
 		cost := time.Since(start)
+		statusCode := c.Writer.Status()
+		clientIP := c.ClientIP()
+		method := c.Request.Method
+		userAgent := c.Request.UserAgent()
+		errorMessage := c.Errors.ByType(gin.ErrorTypePrivate).String()
+
+		// 使用彩色日志
+		if global.Config.Log.LogInConsole {
+			// 根据状态码选择颜色
+			var logFunc func(format string, args ...interface{})
+			if statusCode >= 500 {
+				logFunc = utils.Error
+			} else if statusCode >= 400 {
+				logFunc = utils.Warn
+			} else {
+				logFunc = utils.Info
+			}
+
+			// 格式化日志消息
+			logMessage := "%s %s %d %s %s %s %s %s"
+			logFunc(logMessage,
+				method, path, statusCode,
+				query, clientIP, userAgent,
+				errorMessage, cost.String())
+		}
+
+		// 同时使用zap记录到文件
 		global.Log.Info(path,
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
+			zap.Int("status", statusCode),
+			zap.String("method", method),
 			zap.String("path", path),
 			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
+			zap.String("ip", clientIP),
+			zap.String("user-agent", userAgent),
+			zap.String("errors", errorMessage),
 			zap.Duration("cost", cost),
 		)
 	}
@@ -52,10 +80,17 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
+					// 使用彩色日志
+					if global.Config.Log.LogInConsole {
+						utils.Error("Broken pipe: %v\n%s", err, string(httpRequest))
+					}
+
+					// 同时记录到文件
 					global.Log.Error(c.Request.URL.Path,
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
+
 					// 如果连接已断开，无法写入状态
 					c.Error(err.(error))
 					c.Abort()
@@ -63,12 +98,25 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 
 				if stack {
+					if global.Config.Log.LogInConsole {
+						utils.Error("[Recovery from panic] %v\n%s\n%s",
+							err,
+							string(httpRequest),
+							string(debug.Stack()))
+					}
+
 					global.Log.Error("[Recovery from panic]",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 						zap.String("stack", string(debug.Stack())),
 					)
 				} else {
+					if global.Config.Log.LogInConsole {
+						utils.Error("[Recovery from panic] %v\n%s",
+							err,
+							string(httpRequest))
+					}
+
 					global.Log.Error("[Recovery from panic]",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
