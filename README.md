@@ -145,6 +145,8 @@ Schema文件的作用是：
 - **提供自动补全和提示**：可以基于这些Schema为用户提供编辑YAML时的字段提示和自动补全功能
 在CI/CD流程中，这些Schema文件被`yaml_validator.go`服务使用，以确保流水线中的Kubernetes配置在部署前是有效的，从而提高部署的成功率和系统的稳定性。
 
+
+
 贡献
 欢迎提交 Issue 和 Pull Request。
 
