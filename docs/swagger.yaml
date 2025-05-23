@@ -1,5 +1,154 @@
 basePath: /api/v1
 definitions:
+  model.Artifact:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      description:
+        type: string
+      download_count:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      path:
+        type: string
+      pipeline:
+        $ref: '#/definitions/model.Pipeline'
+      pipeline_id:
+        type: integer
+      pipeline_run_id:
+        type: integer
+      size:
+        description: 文件大小(字节)
+        type: integer
+      type:
+        description: zip, jar, war, docker, etc.
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      version:
+        type: string
+    type: object
+  model.BuildTemplate:
+    properties:
+      content:
+        description: YAML格式的模板内容
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      creator:
+        $ref: '#/definitions/model.User'
+      description:
+        type: string
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      name:
+        type: string
+      type:
+        description: docker, nodejs, golang, java, etc.
+        type: string
+      updated_at:
+        type: string
+      usage_count:
+        type: integer
+    type: object
+  model.DAG:
+    properties:
+      created_at:
+        type: string
+      creator:
+        $ref: '#/definitions/model.User'
+      creator_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        description: 是否为活动版本
+        type: boolean
+      name:
+        type: string
+      nodes:
+        description: 用于JSON序列化和反序列化
+        items:
+          $ref: '#/definitions/model.DAGNode'
+        type: array
+      pipeline:
+        $ref: '#/definitions/model.Pipeline'
+      pipeline_id:
+        description: 关联的流水线ID
+        type: integer
+      updated_at:
+        type: string
+      version:
+        description: 版本号
+        type: integer
+    type: object
+  model.DAGNode:
+    properties:
+      config:
+        $ref: '#/definitions/model.JSONMap'
+      dependencies:
+        description: 依赖的节点ID列表
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      position:
+        allOf:
+        - $ref: '#/definitions/model.JSONMap'
+        description: 节点在UI中的位置
+      type:
+        description: task, condition, parallel, etc.
+        type: string
+    type: object
+  model.Environment:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      last_deployed_at:
+        type: string
+      name:
+        type: string
+      status:
+        description: active, inactive, error
+        type: string
+      type:
+        description: development, testing, staging, production
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      variables:
+        description: JSON格式的环境变量
+        type: string
+    type: object
+  model.JSONMap:
+    additionalProperties: true
+    type: object
   model.Job:
     properties:
       command:
@@ -85,6 +234,39 @@ definitions:
       user:
         $ref: '#/definitions/model.User'
     type: object
+  model.Release:
+    properties:
+      artifact:
+        $ref: '#/definitions/model.Artifact'
+      artifact_id:
+        type: integer
+      created_at:
+        type: string
+      deployed_at:
+        type: string
+      deployed_by:
+        type: integer
+      description:
+        type: string
+      environment:
+        description: development, testing, staging, production
+        type: string
+      id:
+        type: integer
+      is_rollback:
+        type: boolean
+      release_notes:
+        type: string
+      status:
+        description: pending, in_progress, success, failed, rolled_back
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      version:
+        type: string
+    type: object
   model.Stage:
     properties:
       created_at:
@@ -104,6 +286,91 @@ definitions:
       pipeline_id:
         type: integer
       updated_at:
+        type: string
+    type: object
+  model.Template:
+    properties:
+      category:
+        $ref: '#/definitions/model.TemplateCategory'
+      category_id:
+        type: integer
+      created_at:
+        type: string
+      creator:
+        $ref: '#/definitions/model.User'
+      creator_id:
+        type: integer
+      description:
+        type: string
+      download_count:
+        type: integer
+      icon:
+        type: string
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      name:
+        type: string
+      tags:
+        description: 逗号分隔的标签
+        type: string
+      updated_at:
+        type: string
+      versions:
+        items:
+          $ref: '#/definitions/model.TemplateVersion'
+        type: array
+    type: object
+  model.TemplateCategory:
+    properties:
+      created_at:
+        type: string
+      creator:
+        $ref: '#/definitions/model.User'
+      creator_id:
+        type: integer
+      description:
+        type: string
+      icon:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      order:
+        description: 排序顺序
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  model.TemplateVersion:
+    properties:
+      changelog:
+        description: 变更日志
+        type: string
+      content:
+        description: 模板内容
+        type: string
+      created_at:
+        type: string
+      creator:
+        $ref: '#/definitions/model.User'
+      creator_id:
+        type: integer
+      download_count:
+        type: integer
+      id:
+        type: integer
+      is_latest:
+        description: 是否为最新版本
+        type: boolean
+      template_id:
+        type: integer
+      updated_at:
+        type: string
+      version:
+        description: 语义化版本号
         type: string
     type: object
   model.User:
@@ -130,6 +397,71 @@ definitions:
       username:
         type: string
     type: object
+  model.YAMLSchema:
+    properties:
+      created_at:
+        type: string
+      creator:
+        $ref: '#/definitions/model.User'
+      creator_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      schema:
+        description: JSON Schema内容
+        type: string
+      type:
+        description: kubernetes, custom, etc.
+        type: string
+      updated_at:
+        type: string
+      version:
+        type: string
+    type: object
+  model.YAMLValidation:
+    properties:
+      content:
+        description: YAML内容
+        type: string
+      created_at:
+        type: string
+      creator:
+        $ref: '#/definitions/model.User'
+      creator_id:
+        type: integer
+      errors:
+        description: 验证错误信息
+        type: string
+      id:
+        type: integer
+      is_valid:
+        type: boolean
+      name:
+        type: string
+      schema_name:
+        description: 例如：Deployment, Service, etc.
+        type: string
+      schema_type:
+        description: kubernetes, custom, etc.
+        type: string
+      updated_at:
+        type: string
+    type: object
+  request.ApplyBuildTemplate:
+    properties:
+      git_branch:
+        type: string
+      git_repo:
+        type: string
+      name:
+        type: string
+      pipeline_id:
+        type: integer
+    type: object
   request.ChangePassword:
     properties:
       newPassword:
@@ -141,6 +473,60 @@ definitions:
     required:
     - newPassword
     - oldPassword
+    type: object
+  request.CreateBuildTemplate:
+    properties:
+      content:
+        type: string
+      description:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        type: string
+      type:
+        type: string
+    required:
+    - content
+    - name
+    - type
+    type: object
+  request.CreateDAG:
+    properties:
+      description:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      nodes:
+        items:
+          $ref: '#/definitions/model.DAGNode'
+        type: array
+      pipeline_id:
+        type: integer
+    required:
+    - name
+    - nodes
+    - pipeline_id
+    type: object
+  request.CreateEnvironment:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+      url:
+        type: string
+      variables:
+        items:
+          $ref: '#/definitions/request.EnvironmentVariable'
+        type: array
+    required:
+    - name
+    - type
     type: object
   request.CreatePipeline:
     properties:
@@ -164,6 +550,111 @@ definitions:
     - git_repo
     - name
     - stages
+    type: object
+  request.CreateRelease:
+    properties:
+      artifact_id:
+        type: integer
+      description:
+        type: string
+      environment:
+        type: string
+      release_notes:
+        type: string
+      version:
+        type: string
+    required:
+    - artifact_id
+    - environment
+    - version
+    type: object
+  request.CreateTemplate:
+    properties:
+      category_id:
+        type: integer
+      changelog:
+        type: string
+      content:
+        description: 模板内容
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      tags:
+        type: string
+      version:
+        description: 初始版本号
+        type: string
+    required:
+    - category_id
+    - content
+    - name
+    - version
+    type: object
+  request.CreateTemplateCategory:
+    properties:
+      description:
+        type: string
+      icon:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      order:
+        type: integer
+    required:
+    - name
+    type: object
+  request.CreateTemplateVersion:
+    properties:
+      changelog:
+        type: string
+      content:
+        type: string
+      version:
+        type: string
+    required:
+    - content
+    - version
+    type: object
+  request.CreateYAMLSchema:
+    properties:
+      description:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      schema:
+        description: JSON Schema内容
+        type: string
+      type:
+        description: kubernetes, custom, etc.
+        type: string
+      version:
+        type: string
+    required:
+    - name
+    - schema
+    - type
+    - version
+    type: object
+  request.EnvironmentVariable:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    required:
+    - key
     type: object
   request.Job:
     properties:
@@ -242,6 +733,59 @@ definitions:
       git_branch:
         type: string
     type: object
+  request.UpdateBuildTemplate:
+    properties:
+      content:
+        type: string
+      description:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        type: string
+      type:
+        type: string
+    required:
+    - content
+    - name
+    - type
+    type: object
+  request.UpdateDAG:
+    properties:
+      description:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      nodes:
+        items:
+          $ref: '#/definitions/model.DAGNode'
+        type: array
+    required:
+    - name
+    - nodes
+    type: object
+  request.UpdateEnvironment:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+      url:
+        type: string
+      variables:
+        items:
+          $ref: '#/definitions/request.EnvironmentVariable'
+        type: array
+    required:
+    - name
+    - type
+    type: object
   request.UpdatePipeline:
     properties:
       description:
@@ -261,6 +805,41 @@ definitions:
     - git_repo
     - name
     type: object
+  request.UpdateTemplate:
+    properties:
+      category_id:
+        type: integer
+      description:
+        type: string
+      icon:
+        type: string
+      is_public:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      tags:
+        type: string
+    required:
+    - category_id
+    - name
+    type: object
+  request.UpdateTemplateCategory:
+    properties:
+      description:
+        type: string
+      icon:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      order:
+        type: integer
+    required:
+    - name
+    type: object
   request.UpdateUserInfo:
     properties:
       avatar:
@@ -276,6 +855,52 @@ definitions:
     required:
     - email
     - name
+    type: object
+  request.UpdateYAMLSchema:
+    properties:
+      description:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      schema:
+        description: JSON Schema内容
+        type: string
+      version:
+        type: string
+    required:
+    - name
+    - schema
+    - version
+    type: object
+  request.ValidateDAG:
+    properties:
+      nodes:
+        items:
+          $ref: '#/definitions/model.DAGNode'
+        type: array
+    required:
+    - nodes
+    type: object
+  request.ValidateYAML:
+    properties:
+      content:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      schema_name:
+        description: 例如：Deployment, Service, etc.
+        type: string
+      schema_type:
+        description: kubernetes, custom, etc.
+        type: string
+    required:
+    - content
+    - name
+    - schema_type
     type: object
   response.PageResult:
     properties:
@@ -309,6 +934,811 @@ info:
   title: CI/CD Pipeline Visualization API
   version: "1.0"
 paths:
+  /artifact:
+    get:
+      consumes:
+      - application/json
+      description: 获取制品列表，支持分页和筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      - description: 制品名称
+        in: query
+        name: name
+        type: string
+      - description: 制品类型
+        in: query
+        name: type
+        type: string
+      - description: 流水线ID
+        in: query
+        name: pipeline_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.Artifact'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取制品列表
+      tags:
+      - 制品管理
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传并创建新的制品
+      parameters:
+      - description: 制品文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: 制品名称
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: 制品类型
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: 版本号
+        in: formData
+        name: version
+        type: string
+      - description: 描述
+        in: formData
+        name: description
+        type: string
+      - description: 关联的流水线ID
+        in: formData
+        name: pipeline_id
+        type: integer
+      - description: 关联的流水线运行ID
+        in: formData
+        name: pipeline_run_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Artifact'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建制品
+      tags:
+      - 制品管理
+  /artifact/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除制品
+      parameters:
+      - description: 制品ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除制品
+      tags:
+      - 制品管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取制品详情
+      parameters:
+      - description: 制品ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Artifact'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取制品详情
+      tags:
+      - 制品管理
+  /artifact/{id}/download:
+    get:
+      consumes:
+      - application/json
+      description: 下载制品文件
+      parameters:
+      - description: 制品ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: 文件内容
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: 下载制品
+      tags:
+      - 制品管理
+  /build-template:
+    get:
+      consumes:
+      - application/json
+      description: 获取构建模板列表，支持分页和筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      - description: 模板名称
+        in: query
+        name: name
+        type: string
+      - description: 模板类型
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.BuildTemplate'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取构建模板列表
+      tags:
+      - 构建模板管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的构建模板
+      parameters:
+      - description: 模板信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateBuildTemplate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.BuildTemplate'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建构建模板
+      tags:
+      - 构建模板管理
+  /build-template/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除构建模板
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除构建模板
+      tags:
+      - 构建模板管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取构建模板详情
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.BuildTemplate'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取构建模板详情
+      tags:
+      - 构建模板管理
+    put:
+      consumes:
+      - application/json
+      description: 更新构建模板信息
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 模板信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateBuildTemplate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.BuildTemplate'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 更新构建模板
+      tags:
+      - 构建模板管理
+  /build-template/{id}/apply:
+    post:
+      consumes:
+      - application/json
+      description: 将构建模板应用到流水线
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 应用信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.ApplyBuildTemplate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 应用成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Pipeline'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 应用构建模板
+      tags:
+      - 构建模板管理
+  /dag:
+    post:
+      consumes:
+      - application/json
+      description: 创建新的DAG
+      parameters:
+      - description: DAG信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateDAG'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.DAG'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建DAG
+      tags:
+      - DAG管理
+  /dag/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的DAG
+      parameters:
+      - description: DAG ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除DAG
+      tags:
+      - DAG管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取DAG详情
+      parameters:
+      - description: DAG ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.DAG'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取DAG详情
+      tags:
+      - DAG管理
+    put:
+      consumes:
+      - application/json
+      description: 更新DAG信息
+      parameters:
+      - description: DAG ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: DAG信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateDAG'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.DAG'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 更新DAG
+      tags:
+      - DAG管理
+  /dag/{id}/activate:
+    post:
+      consumes:
+      - application/json
+      description: 激活指定的DAG版本
+      parameters:
+      - description: DAG ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 激活成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 激活DAG版本
+      tags:
+      - DAG管理
+  /dag/{id}/version:
+    post:
+      consumes:
+      - application/json
+      description: 基于现有DAG创建新版本
+      parameters:
+      - description: DAG ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.DAG'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建DAG的新版本
+      tags:
+      - DAG管理
+  /dag/pipeline/{pipelineId}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定流水线的所有DAG
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: pipelineId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.DAG'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取流水线的所有DAG
+      tags:
+      - DAG管理
+  /dag/pipeline/{pipelineId}/active:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定流水线的活动DAG
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: pipelineId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.DAG'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取流水线的活动DAG
+      tags:
+      - DAG管理
+  /dag/pipeline/{pipelineId}/history:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定流水线的DAG历史版本
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: pipelineId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.DAG'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取DAG历史版本
+      tags:
+      - DAG管理
+  /dag/validate:
+    post:
+      consumes:
+      - application/json
+      description: 验证DAG是否有效（无环）
+      parameters:
+      - description: DAG节点
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.ValidateDAG'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 验证成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 验证DAG
+      tags:
+      - DAG管理
+  /environment:
+    get:
+      consumes:
+      - application/json
+      description: 获取环境列表，支持分页和筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      - description: 环境名称
+        in: query
+        name: name
+        type: string
+      - description: 环境类型
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.Environment'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取环境列表
+      tags:
+      - 环境管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的部署环境
+      parameters:
+      - description: 环境信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateEnvironment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Environment'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建环境
+      tags:
+      - 环境管理
+  /environment/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除环境
+      parameters:
+      - description: 环境ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除环境
+      tags:
+      - 环境管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取环境详情
+      parameters:
+      - description: 环境ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Environment'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取环境详情
+      tags:
+      - 环境管理
+    put:
+      consumes:
+      - application/json
+      description: 更新环境信息
+      parameters:
+      - description: 环境ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 环境信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateEnvironment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Environment'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 更新环境
+      tags:
+      - 环境管理
   /pipeline:
     get:
       consumes:
@@ -633,6 +2063,628 @@ paths:
       summary: 触发流水线
       tags:
       - 流水线管理
+  /release:
+    get:
+      consumes:
+      - application/json
+      description: 获取发布列表，支持分页和筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页大小
+        in: query
+        name: pageSize
+        type: integer
+      - description: 环境
+        in: query
+        name: environment
+        type: string
+      - description: 状态
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.Release'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取发布列表
+      tags:
+      - 发布管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的发布版本
+      parameters:
+      - description: 发布信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateRelease'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Release'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建发布
+      tags:
+      - 发布管理
+  /release/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除发布
+      parameters:
+      - description: 发布ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除发布
+      tags:
+      - 发布管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取发布详情
+      parameters:
+      - description: 发布ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Release'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取发布详情
+      tags:
+      - 发布管理
+  /release/{id}/rollback:
+    post:
+      consumes:
+      - application/json
+      description: 回滚到指定的发布版本
+      parameters:
+      - description: 发布ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 回滚成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Release'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 回滚发布
+      tags:
+      - 发布管理
+  /template-market/category:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有模板分类
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.TemplateCategory'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取模板分类列表
+      tags:
+      - 模板市场
+    post:
+      consumes:
+      - application/json
+      description: 创建新的模板分类
+      parameters:
+      - description: 分类信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateTemplateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TemplateCategory'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建模板分类
+      tags:
+      - 模板市场
+  /template-market/category/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的模板分类
+      parameters:
+      - description: 分类ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除模板分类
+      tags:
+      - 模板市场
+    put:
+      consumes:
+      - application/json
+      description: 更新模板分类信息
+      parameters:
+      - description: 分类ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 分类信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateTemplateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TemplateCategory'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 更新模板分类
+      tags:
+      - 模板市场
+  /template-market/search:
+    get:
+      consumes:
+      - application/json
+      description: 根据关键字、分类和标签搜索模板
+      parameters:
+      - description: 关键字
+        in: query
+        name: keyword
+        type: string
+      - description: 分类ID
+        in: query
+        name: category_id
+        type: integer
+      - description: 标签（逗号分隔）
+        in: query
+        name: tags
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 搜索成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Template'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 搜索模板
+      tags:
+      - 模板市场
+  /template-market/template:
+    get:
+      consumes:
+      - application/json
+      description: 获取模板列表，支持按分类筛选
+      parameters:
+      - description: 分类ID
+        in: query
+        name: category_id
+        type: integer
+      - description: 是否公开
+        in: query
+        name: public
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Template'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取模板列表
+      tags:
+      - 模板市场
+    post:
+      consumes:
+      - application/json
+      description: 创建新的模板
+      parameters:
+      - description: 模板信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateTemplate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Template'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建模板
+      tags:
+      - 模板市场
+  /template-market/template/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的模板
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除模板
+      tags:
+      - 模板市场
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取模板详情
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Template'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取模板详情
+      tags:
+      - 模板市场
+    put:
+      consumes:
+      - application/json
+      description: 更新模板信息
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 模板信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateTemplate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Template'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 更新模板
+      tags:
+      - 模板市场
+  /template-market/template/{id}/download:
+    get:
+      consumes:
+      - application/json
+      description: 下载指定模板的最新版本
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 下载成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TemplateVersion'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 下载模板
+      tags:
+      - 模板市场
+  /template-market/template/{id}/version:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定模板的所有版本
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.TemplateVersion'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取模板版本列表
+      tags:
+      - 模板市场
+    post:
+      consumes:
+      - application/json
+      description: 为指定模板创建新版本
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 版本信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateTemplateVersion'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TemplateVersion'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建模板版本
+      tags:
+      - 模板市场
+  /template-market/template/{id}/version/{versionId}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的模板版本
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 版本ID
+        in: path
+        name: versionId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除模板版本
+      tags:
+      - 模板市场
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取模板版本详情
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 版本ID
+        in: path
+        name: versionId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TemplateVersion'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取模板版本详情
+      tags:
+      - 模板市场
+  /template-market/template/{id}/version/{versionId}/latest:
+    post:
+      consumes:
+      - application/json
+      description: 将指定版本设置为模板的最新版本
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 版本ID
+        in: path
+        name: versionId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 设置成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 设置版本为最新版本
+      tags:
+      - 模板市场
   /user/info:
     get:
       consumes:
@@ -762,6 +2814,206 @@ paths:
       summary: 用户注册
       tags:
       - 用户管理
+  /yaml/history:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前用户的YAML验证历史
+      parameters:
+      - default: 10
+        description: 限制数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.YAMLValidation'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取验证历史
+      tags:
+      - YAML验证
+  /yaml/schema:
+    get:
+      consumes:
+      - application/json
+      description: 获取YAML Schema列表
+      parameters:
+      - default: '""'
+        description: Schema类型
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.YAMLSchema'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取YAML Schema列表
+      tags:
+      - YAML验证
+    post:
+      consumes:
+      - application/json
+      description: 创建新的YAML Schema
+      parameters:
+      - description: Schema信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateYAMLSchema'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.YAMLSchema'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建YAML Schema
+      tags:
+      - YAML验证
+  /yaml/schema/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的YAML Schema
+      parameters:
+      - description: Schema ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除YAML Schema
+      tags:
+      - YAML验证
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取YAML Schema详情
+      parameters:
+      - description: Schema ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.YAMLSchema'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取YAML Schema详情
+      tags:
+      - YAML验证
+    put:
+      consumes:
+      - application/json
+      description: 更新YAML Schema信息
+      parameters:
+      - description: Schema ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Schema信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateYAMLSchema'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.YAMLSchema'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 更新YAML Schema
+      tags:
+      - YAML验证
+  /yaml/validate:
+    post:
+      consumes:
+      - application/json
+      description: 验证YAML内容是否符合指定的Schema
+      parameters:
+      - description: YAML信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.ValidateYAML'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 验证成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.YAMLValidation'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 验证YAML
+      tags:
+      - YAML验证
 securityDefinitions:
   BearerAuth:
     in: header
