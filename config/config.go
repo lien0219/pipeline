@@ -82,12 +82,32 @@ type Upload struct {
 	Qiniu Qiniu `mapstructure:"qiniu" json:"qiniu" yaml:"qiniu"`
 }
 
+// Kubernetes Kubernetes配置
+type Kubernetes struct {
+	Kubeconfig                string `mapstructure:"kubeconfig" json:"kubeconfig" yaml:"kubeconfig"`                                                       // kubeconfig文件路径
+	Namespace                 string `mapstructure:"namespace" json:"namespace" yaml:"namespace"`                                                          // 命名空间
+	DeploymentName            string `mapstructure:"deployment_name" json:"deployment_name" yaml:"deployment_name"`                                        // 部署名称
+	ContainerName             string `mapstructure:"container_name" json:"container_name" yaml:"container_name"`                                           // 容器名称
+	Image                     string `mapstructure:"image" json:"image" yaml:"image"`                                                                      // 镜像名称
+	Replicas                  int    `mapstructure:"replicas" json:"replicas" yaml:"replicas"`                                                             // 副本数量
+	Port                      int    `mapstructure:"port" json:"port" yaml:"port"`                                                                         // 容器端口
+	ServiceType               string `mapstructure:"service_type" json:"service_type" yaml:"service_type"`                                                 // 服务类型
+	ServicePort               int    `mapstructure:"service_port" json:"service_port" yaml:"service_port"`                                                 // 服务端口
+	IngressHost               string `mapstructure:"ingress_host" json:"ingress_host" yaml:"ingress_host"`                                                 // Ingress主机名
+	IngressPath               string `mapstructure:"ingress_path" json:"ingress_path" yaml:"ingress_path"`                                                 // Ingress路径
+	IngressClass              string `mapstructure:"ingress_class" json:"ingress_class" yaml:"ingress_class"`                                              // Ingress类
+	IngressTLS                bool   `mapstructure:"ingress_tls" json:"ingress_tls" yaml:"ingress_tls"`                                                    // 是否启用TLS
+	IngressTLSSecretName      string `mapstructure:"ingress_tls_secret_name" json:"ingress_tls_secret_name" yaml:"ingress_tls_secret_name"`                // TLS密钥名称
+	IngressTLSSecretNamespace string `mapstructure:"ingress_tls_secret_namespace" json:"ingress_tls_secret_namespace" yaml:"ingress_tls_secret_namespace"` // TLS密钥命名空间
+}
+
 // Configuration 总配置结构
 type Configuration struct {
-	System System `mapstructure:"system" json:"system" yaml:"system"`
-	Log    Log    `mapstructure:"log" json:"log" yaml:"log"`
-	Mysql  Mysql  `mapstructure:"mysql" json:"mysql" yaml:"mysql"`
-	Redis  Redis  `mapstructure:"redis" json:"redis" yaml:"redis"`
-	CORS   CORS   `mapstructure:"cors" json:"cors" yaml:"cors"`
-	Upload Upload `mapstructure:"upload" json:"upload" yaml:"upload"`
+	System     System     `mapstructure:"system" json:"system" yaml:"system"`
+	Log        Log        `mapstructure:"log" json:"log" yaml:"log"`
+	Mysql      Mysql      `mapstructure:"mysql" json:"mysql" yaml:"mysql"`
+	Redis      Redis      `mapstructure:"redis" json:"redis" yaml:"redis"`
+	CORS       CORS       `mapstructure:"cors" json:"cors" yaml:"cors"`
+	Upload     Upload     `mapstructure:"upload" json:"upload" yaml:"upload"`
+	Kubernetes Kubernetes `mapstructure:"kubernetes" json:"kubernetes" yaml:"kubernetes"`
 }

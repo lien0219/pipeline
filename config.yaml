@@ -67,3 +67,21 @@ upload:
     access_key: your-access-key # 秘钥AK
     secret_key: your-secret-key # 秘钥SK
     use_cdn_domains: false # 是否使用CDN加速
+
+# Kubernetes配置
+kubernetes:
+  kubeconfig: ~/.kube/config # kubeconfig文件路径
+  namespace: default # 命名空间
+  deployment_name: your-deployment-name # 部署名称
+  container_name: your-container-name # 容器名称
+  image: your-image-name:latest # 镜像名称
+  replicas: 3 # 副本数量
+  port: 8080 # 容器端口
+  service_type: ClusterIP # 服务类型
+  service_port: 8080 # 服务端口
+  ingress_host: your-ingress-host # Ingress主机名
+  ingress_path: / # Ingress路径
+  ingress_class: nginx # Ingress类
+  ingress_tls: true # 是否启用TLS
+  ingress_tls_secret_name: your-tls-secret-name # TLS密钥名称
+  ingress_tls_secret_namespace: your-tls-secret-namespace # TLS密钥命名空间

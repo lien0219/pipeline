@@ -3,6 +3,7 @@ package main
 import (
 	"gin_pipeline/global"
 	"gin_pipeline/initialize"
+	_ "gin_pipeline/service"
 	"gin_pipeline/utils"
 )
 
@@ -35,6 +36,16 @@ func main() {
 	// 初始化数据库
 	initialize.InitDB()
 	utils.Success("数据库连接初始化成功")
+
+	// // 初始化K8sSvc
+	// kubeconfigPath := global.Config.Kubernetes.Kubeconfig
+	// var err error
+	// service.K8sSvc, err = service.NewK8sService(kubeconfigPath)
+	// if err != nil {
+	// 	utils.Error("K8sSvc 初始化失败: %v", err)
+	// 	return
+	// }
+	// utils.Success("K8sSvc 初始化成功")
 
 	// 初始化Redis
 	initialize.InitRedis()

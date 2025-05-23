@@ -3,6 +3,7 @@ package router
 import (
 	v1 "gin_pipeline/api/v1"
 	"gin_pipeline/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -157,5 +158,42 @@ func InitTemplateMarketRouter(Router *gin.RouterGroup) {
 		// 搜索和下载
 		TemplateMarketRouter.GET("/search", v1.SearchTemplates)
 		TemplateMarketRouter.GET("/template/:id/download", v1.DownloadTemplate)
+	}
+}
+
+// InitK8sRouter 初始化 Kubernetes 路由
+func InitK8sRouter(Router *gin.RouterGroup) {
+	K8sRouter := Router.Group("/k8s")
+	K8sRouter.Use(middleware.JWTAuth())
+	{
+		// Job 操作路由
+		JobRouter := K8sRouter.Group("/jobs")
+		JobRouter.Use(middleware.JWTAuth())
+		{
+			JobRouter.POST("/:namespace", v1.CreateJobHandler)
+			JobRouter.GET("/:namespace/:name", v1.GetJobHandler)
+			JobRouter.PUT("/:namespace/:name", v1.UpdateJobHandler)
+			JobRouter.DELETE("/:namespace/:name", v1.DeleteJobHandler)
+		}
+
+		// CronJob 操作路由
+		CronJobRouter := K8sRouter.Group("/cronjobs")
+		CronJobRouter.Use(middleware.JWTAuth())
+		{
+			CronJobRouter.POST("/:namespace", v1.CreateCronJobHandler)
+			CronJobRouter.GET("/:namespace/:name", v1.GetCronJobHandler)
+			CronJobRouter.PUT("/:namespace/:name", v1.UpdateCronJobHandler)
+			CronJobRouter.DELETE("/:namespace/:name", v1.DeleteCronJobHandler)
+		}
+
+		// Deployment 操作路由
+		DeploymentRouter := K8sRouter.Group("/deployments")
+		DeploymentRouter.Use(middleware.JWTAuth())
+		{
+			DeploymentRouter.POST("/:namespace", v1.CreateDeploymentHandler)
+			DeploymentRouter.GET("/:namespace/:name", v1.GetDeploymentHandler)
+			DeploymentRouter.PUT("/:namespace/:name", v1.UpdateDeploymentHandler)
+			DeploymentRouter.DELETE("/:namespace/:name", v1.DeleteDeploymentHandler)
+		}
 	}
 }
