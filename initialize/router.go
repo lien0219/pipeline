@@ -4,13 +4,14 @@ import (
 	"gin_pipeline/global"
 	"gin_pipeline/middleware"
 	"gin_pipeline/router"
+	"net/http"
+	"time"
+
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/zap"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"net/http"
-	"time"
 
 	_ "gin_pipeline/docs" // 导入swagger文档
 )
@@ -68,6 +69,7 @@ func InitRouter() *gin.Engine {
 	router.InitDAGRouter(apiGroup)            // DAG路由
 	router.InitYAMLValidatorRouter(apiGroup)  // YAML验证路由
 	router.InitTemplateMarketRouter(apiGroup) // 模板市场路由
+	router.InitK8sRouter(apiGroup)            // Kubernetes路由
 
 	global.Log.Info("路由注册成功")
 	return r
