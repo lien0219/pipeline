@@ -206,3 +206,15 @@ func InitClusterRouter(Router *gin.RouterGroup) {
 		ClusterRouter.GET("/all", v1.GetAllClusters)
 	}
 }
+
+// InitHPARouter 初始化 HPA 路由
+func InitHPARouter(Router *gin.RouterGroup) {
+	HPARouter := Router.Group("/hpa").Use(middleware.JWTAuth())
+	{
+		HPARouter.POST("", v1.CreateHPAPolicy)
+		HPARouter.GET("", v1.GetHPAPolicies)
+		HPARouter.GET("/:id", v1.GetHPAPolicyByID)
+		HPARouter.PUT("/:id", v1.UpdateHPAPolicy)
+		HPARouter.DELETE("/:id", v1.DeleteHPAPolicy)
+	}
+}

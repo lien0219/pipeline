@@ -3,9 +3,10 @@ package initialize
 import (
 	"fmt"
 	"gin_pipeline/global"
+	"os"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
-	"os"
 )
 
 // InitConfig 初始化配置

@@ -5,26 +5,31 @@ import (
 	"gin_pipeline/global"
 	"gin_pipeline/model/response"
 	"gin_pipeline/utils"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 	_ "net/http"
 	_ "strconv"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
 // JWTAuth JWT认证中间件
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.Request.Header.Get("Authorization")
-		if token == "" {
+		tokenString := c.Request.Header.Get("Authorization")
+		if tokenString == "" {
 			response.FailWithDetailed(gin.H{"reload": true}, "未登录或非法访问", c)
 			c.Abort()
 			return
 		}
 
+		if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+			tokenString = tokenString[7:]
+		}
+
 		// 解析token
 		j := utils.NewJWT()
-		claims, err := j.ParseToken(token)
+		claims, err := j.ParseToken(tokenString)
 		if err != nil {
 			if errors.Is(err, utils.TokenExpired) {
 				response.FailWithDetailed(gin.H{"reload": true}, "授权已过期", c)
@@ -36,7 +41,6 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		// 将用户信息存入上下文
 		c.Set("claims", claims)
 		c.Set("userId", claims.ID)
 		c.Next()

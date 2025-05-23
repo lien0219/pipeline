@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"encoding/base64"
 	"errors"
 	"gin_pipeline/global"
-	"github.com/dgrijalva/jwt-go"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 type JWT struct {
@@ -28,8 +30,12 @@ type CustomClaims struct {
 
 // NewJWT 创建JWT实例
 func NewJWT() *JWT {
+	decodedKey, err := base64.StdEncoding.DecodeString(global.Config.System.JwtSecret)
+	if err != nil {
+		decodedKey = []byte(global.Config.System.JwtSecret)
+	}
 	return &JWT{
-		SigningKey: []byte(global.Config.System.JwtSecret),
+		SigningKey: decodedKey,
 	}
 }
 
@@ -47,20 +53,27 @@ func (j *JWT) ParseToken(tokenString string) (*CustomClaims, error) {
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {
 			if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				global.Log.Error("Token 已过期", "error", err)
 				return nil, TokenExpired
 			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
+				global.Log.Error("Token 尚未生效", "error", err)
 				return nil, TokenNotValidYet
 			} else {
+				global.Log.Error("Token 无效", "error", err)
 				return nil, TokenInvalid
 			}
 		}
+		global.Log.Error("Token 解析错误", "error", err)
+		return nil, TokenInvalid
 	}
 	if token != nil {
 		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
 			return claims, nil
 		}
+		global.Log.Error("Token 声明验证失败")
 		return nil, TokenInvalid
 	}
+	global.Log.Error("Token 为空")
 	return nil, TokenInvalid
 }
 

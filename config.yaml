@@ -7,7 +7,7 @@ system:
   use_multipoint: false # 是否开启多点登录拦截
   oss_type: local # 存储类型 local:本地 qiniu:七牛云 aliyun:阿里云 tencent:腾讯云
   use_https: false # 是否使用https
-  jwt_secret: your-jwt-secret-key # JWT密钥
+  jwt_secret: RThBd1J4SWwyazNxU09aWG92RjA3TFBwWTQ2c25oZWQ= # JWT密钥
   jwt_expire: 86400 # JWT过期时间(秒)
 
 # 日志配置
