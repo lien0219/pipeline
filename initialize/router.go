@@ -70,6 +70,7 @@ func InitRouter() *gin.Engine {
 	router.InitYAMLValidatorRouter(apiGroup)  // YAML验证路由
 	router.InitTemplateMarketRouter(apiGroup) // 模板市场路由
 	router.InitK8sRouter(apiGroup)            // Kubernetes路由
+	router.InitClusterRouter(apiGroup)        // 集群路由
 
 	global.Log.Info("路由注册成功")
 	return r

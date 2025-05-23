@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"gin_pipeline/global"
 	"gin_pipeline/model"
+	"log"
+	"os"
+	"time"
+
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"log"
-	"os"
-	"time"
 )
 
 // InitDB 初始化数据库
@@ -93,6 +94,7 @@ func InitDB() {
 		&model.TemplateCategory{},
 		&model.Template{},
 		&model.TemplateVersion{},
+		&model.Cluster{},
 	)
 	if err != nil {
 		global.Log.Error("自动迁移失败", zap.Any("err", err))

@@ -197,3 +197,12 @@ func InitK8sRouter(Router *gin.RouterGroup) {
 		}
 	}
 }
+
+// InitClusterRouter 初始化集群路由
+func InitClusterRouter(Router *gin.RouterGroup) {
+	ClusterRouter := Router.Group("/cluster").Use(middleware.JWTAuth())
+	{
+		ClusterRouter.POST("", v1.AddCluster)
+		ClusterRouter.GET("/all", v1.GetAllClusters)
+	}
+}
