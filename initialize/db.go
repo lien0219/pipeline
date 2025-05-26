@@ -96,6 +96,8 @@ func InitDB() {
 		&model.TemplateVersion{},
 		&model.Cluster{},
 		&model.HPAPolicy{},
+		&model.ResourceQuota{},
+		&model.TenantResourceRequest{},
 	)
 	if err != nil {
 		global.Log.Error("自动迁移失败", zap.Any("err", err))

@@ -2207,6 +2207,294 @@ const docTemplate = `{
                 }
             }
         },
+        "/resource-quota": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "为指定租户创建资源配额",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "资源配额管理"
+                ],
+                "summary": "创建资源配额",
+                "parameters": [
+                    {
+                        "description": "资源配额信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateResourceQuota"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/resource-quota/{tenant_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "根据租户ID获取资源配额",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "资源配额管理"
+                ],
+                "summary": "获取资源配额",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户ID",
+                        "name": "tenant_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ResourceQuota"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "根据租户ID更新资源配额",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "资源配额管理"
+                ],
+                "summary": "更新资源配额",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户ID",
+                        "name": "tenant_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新的资源配额信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateResourceQuota"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/resource-request": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "租户发起资源请求",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "资源请求管理"
+                ],
+                "summary": "创建资源请求",
+                "parameters": [
+                    {
+                        "description": "资源请求信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateResourceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/resource-request/{request_id}/approve": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "管理员批准资源请求",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "资源请求管理"
+                ],
+                "summary": "批准资源请求",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "资源请求ID",
+                        "name": "request_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/resource-request/{request_id}/reject": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "管理员拒绝资源请求",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "资源请求管理"
+                ],
+                "summary": "拒绝资源请求",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "资源请求ID",
+                        "name": "request_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/resource-requests": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取所有待处理的资源请求",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "资源请求管理"
+                ],
+                "summary": "获取所有资源请求",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.TenantResourceRequest"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/template-market/category": {
             "get": {
                 "security": [
@@ -3964,6 +4252,36 @@ const docTemplate = `{
                 }
             }
         },
+        "model.ResourceQuota": {
+            "type": "object",
+            "properties": {
+                "cpu_quota": {
+                    "description": "CPU配额",
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "memory_quota": {
+                    "description": "内存配额",
+                    "type": "integer"
+                },
+                "storage_quota": {
+                    "description": "存储配额",
+                    "type": "integer"
+                },
+                "tenant_id": {
+                    "description": "租户ID",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Stage": {
             "type": "object",
             "properties": {
@@ -4118,6 +4436,36 @@ const docTemplate = `{
                 },
                 "version": {
                     "description": "语义化版本号",
+                    "type": "string"
+                }
+            }
+        },
+        "model.TenantResourceRequest": {
+            "type": "object",
+            "properties": {
+                "cpu_request": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "memory_request": {
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "pending, approved, rejected",
+                    "type": "string"
+                },
+                "storage_request": {
+                    "type": "integer"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -4403,6 +4751,52 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CreateResourceQuota": {
+            "type": "object",
+            "required": [
+                "cpu_quota",
+                "memory_quota",
+                "storage_quota",
+                "tenant_id"
+            ],
+            "properties": {
+                "cpu_quota": {
+                    "type": "number"
+                },
+                "memory_quota": {
+                    "type": "integer"
+                },
+                "storage_quota": {
+                    "type": "integer"
+                },
+                "tenant_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CreateResourceRequest": {
+            "type": "object",
+            "required": [
+                "cpu_request",
+                "memory_request",
+                "storage_request",
+                "tenant_id"
+            ],
+            "properties": {
+                "cpu_request": {
+                    "type": "number"
+                },
+                "memory_request": {
+                    "type": "integer"
+                },
+                "storage_request": {
+                    "type": "integer"
+                },
+                "tenant_id": {
                     "type": "string"
                 }
             }
@@ -4744,6 +5138,25 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "request.UpdateResourceQuota": {
+            "type": "object",
+            "required": [
+                "cpu_quota",
+                "memory_quota",
+                "storage_quota"
+            ],
+            "properties": {
+                "cpu_quota": {
+                    "type": "number"
+                },
+                "memory_quota": {
+                    "type": "integer"
+                },
+                "storage_quota": {
+                    "type": "integer"
                 }
             }
         },

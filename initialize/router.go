@@ -72,6 +72,7 @@ func InitRouter() *gin.Engine {
 	router.InitK8sRouter(apiGroup)            // Kubernetes路由
 	router.InitClusterRouter(apiGroup)        // 集群路由
 	router.InitHPARouter(apiGroup)            // HPA路由
+	router.InitResourceQuotaRouter(apiGroup)  // 资源配额路由
 
 	global.Log.Info("路由注册成功")
 	return r

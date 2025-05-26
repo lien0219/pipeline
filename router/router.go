@@ -218,3 +218,21 @@ func InitHPARouter(Router *gin.RouterGroup) {
 		HPARouter.DELETE("/:id", v1.DeleteHPAPolicy)
 	}
 }
+
+// InitResourceQuotaRouter 初始化资源配额路由
+func InitResourceQuotaRouter(Router *gin.RouterGroup) {
+	ResourceQuotaRouter := Router.Group("/resource-quota").Use(middleware.JWTAuth())
+	{
+		ResourceQuotaRouter.POST("", v1.CreateResourceQuota)
+		ResourceQuotaRouter.GET("/:tenant_id", v1.GetResourceQuota)
+		ResourceQuotaRouter.PUT("/:tenant_id", v1.UpdateResourceQuota)
+	}
+
+	ResourceRequestRouter := Router.Group("/resource-request").Use(middleware.JWTAuth())
+	{
+		ResourceRequestRouter.POST("", v1.CreateResourceRequest)
+		ResourceRequestRouter.GET("/requests", v1.GetResourceRequests)
+		ResourceRequestRouter.POST("/:request_id/approve", v1.ApproveResourceRequest)
+		ResourceRequestRouter.POST("/:request_id/reject", v1.RejectResourceRequest)
+	}
+}

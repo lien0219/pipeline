@@ -267,6 +267,27 @@ definitions:
       version:
         type: string
     type: object
+  model.ResourceQuota:
+    properties:
+      cpu_quota:
+        description: CPU配额
+        type: number
+      created_at:
+        type: string
+      id:
+        type: integer
+      memory_quota:
+        description: 内存配额
+        type: integer
+      storage_quota:
+        description: 存储配额
+        type: integer
+      tenant_id:
+        description: 租户ID
+        type: string
+      updated_at:
+        type: string
+    type: object
   model.Stage:
     properties:
       created_at:
@@ -371,6 +392,26 @@ definitions:
         type: string
       version:
         description: 语义化版本号
+        type: string
+    type: object
+  model.TenantResourceRequest:
+    properties:
+      cpu_request:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: integer
+      memory_request:
+        type: integer
+      status:
+        description: pending, approved, rejected
+        type: string
+      storage_request:
+        type: integer
+      tenant_id:
+        type: string
+      updated_at:
         type: string
     type: object
   model.User:
@@ -567,6 +608,38 @@ definitions:
     - artifact_id
     - environment
     - version
+    type: object
+  request.CreateResourceQuota:
+    properties:
+      cpu_quota:
+        type: number
+      memory_quota:
+        type: integer
+      storage_quota:
+        type: integer
+      tenant_id:
+        type: string
+    required:
+    - cpu_quota
+    - memory_quota
+    - storage_quota
+    - tenant_id
+    type: object
+  request.CreateResourceRequest:
+    properties:
+      cpu_request:
+        type: number
+      memory_request:
+        type: integer
+      storage_request:
+        type: integer
+      tenant_id:
+        type: string
+    required:
+    - cpu_request
+    - memory_request
+    - storage_request
+    - tenant_id
     type: object
   request.CreateTemplate:
     properties:
@@ -804,6 +877,19 @@ definitions:
     required:
     - git_repo
     - name
+    type: object
+  request.UpdateResourceQuota:
+    properties:
+      cpu_quota:
+        type: number
+      memory_quota:
+        type: integer
+      storage_quota:
+        type: integer
+    required:
+    - cpu_quota
+    - memory_quota
+    - storage_quota
     type: object
   request.UpdateTemplate:
     properties:
@@ -2217,6 +2303,180 @@ paths:
       summary: 回滚发布
       tags:
       - 发布管理
+  /resource-quota:
+    post:
+      consumes:
+      - application/json
+      description: 为指定租户创建资源配额
+      parameters:
+      - description: 资源配额信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateResourceQuota'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建资源配额
+      tags:
+      - 资源配额管理
+  /resource-quota/{tenant_id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据租户ID获取资源配额
+      parameters:
+      - description: 租户ID
+        in: path
+        name: tenant_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ResourceQuota'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取资源配额
+      tags:
+      - 资源配额管理
+    put:
+      consumes:
+      - application/json
+      description: 根据租户ID更新资源配额
+      parameters:
+      - description: 租户ID
+        in: path
+        name: tenant_id
+        required: true
+        type: string
+      - description: 更新的资源配额信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateResourceQuota'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新资源配额
+      tags:
+      - 资源配额管理
+  /resource-request:
+    post:
+      consumes:
+      - application/json
+      description: 租户发起资源请求
+      parameters:
+      - description: 资源请求信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateResourceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建资源请求
+      tags:
+      - 资源请求管理
+  /resource-request/{request_id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: 管理员批准资源请求
+      parameters:
+      - description: 资源请求ID
+        in: path
+        name: request_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 批准资源请求
+      tags:
+      - 资源请求管理
+  /resource-request/{request_id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: 管理员拒绝资源请求
+      parameters:
+      - description: 资源请求ID
+        in: path
+        name: request_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 拒绝资源请求
+      tags:
+      - 资源请求管理
+  /resource-requests:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有待处理的资源请求
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.TenantResourceRequest'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取所有资源请求
+      tags:
+      - 资源请求管理
   /template-market/category:
     get:
       consumes:
