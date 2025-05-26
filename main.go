@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"gin_pipeline/global"
 	"gin_pipeline/initialize"
-	_ "gin_pipeline/service"
+	"gin_pipeline/model"
+	"gin_pipeline/service"
 	"gin_pipeline/utils"
 )
 
@@ -54,6 +56,57 @@ func main() {
 	// 初始化路由
 	r := initialize.InitRouter()
 	utils.Success("路由初始化成功")
+
+	// 启动监控任务
+	service.StartResourceMonitor()
+	// 启动资源回收任务
+	service.StartResourceReclamation()
+	// 启动队列处理函数
+	service.ProcessResourceRequests()
+
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<测试
+	// 创建一个资源请求实例
+	request := model.TenantResourceRequest{
+		TenantID:       "6",
+		CPURequest:     2.0,
+		MemoryRequest:  4096,
+		StorageRequest: 10240,
+	}
+	// 将资源请求加入队列
+	err := service.QueueResourceRequest(request)
+	if err != nil {
+		utils.Error("将资源请求加入队列失败: %v", err)
+		// 可以选择继续执行或者返回，根据实际情况决定
+		// return
+	}
+
+	tenantID := "60"
+	// 动态调整资源配额
+	err = service.AdjustResourceQuota(tenantID)
+	if err != nil {
+		utils.Error("动态调整资源配额失败: %v", err)
+		// 可以选择继续执行或者返回，根据实际情况决定
+		// return
+	}
+
+	// 模拟资源使用
+	// 生成资源使用报告
+	report, err := service.GenerateResourceReport(tenantID)
+	if err != nil {
+		utils.Error("生成资源使用报告失败: %v", err)
+		// 可以选择继续执行或者返回，根据实际情况决定
+		// return
+	} else {
+		// 打印报告信息
+		fmt.Printf("租户 ID: %s\n", report.TenantID)
+		fmt.Printf("CPU 使用量: %f\n", report.CPUUsage)
+		fmt.Printf("CPU 配额: %f\n", report.CPUQuota)
+		fmt.Printf("内存使用量: %d\n", report.MemoryUsage)
+		fmt.Printf("内存配额: %d\n", report.MemoryQuota)
+		fmt.Printf("存储使用量: %d\n", report.StorageUsage)
+		fmt.Printf("存储配额: %d\n", report.StorageQuota)
+	}
+	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>测试
 
 	// 启动服务器
 	port := global.Config.System.Port

@@ -73,6 +73,7 @@ func InitRouter() *gin.Engine {
 	router.InitClusterRouter(apiGroup)        // 集群路由
 	router.InitHPARouter(apiGroup)            // HPA路由
 	router.InitResourceQuotaRouter(apiGroup)  // 资源配额路由
+	router.InitResourceReportRouter(apiGroup) // 资源报告路由
 
 	global.Log.Info("路由注册成功")
 	return r

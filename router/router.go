@@ -236,3 +236,15 @@ func InitResourceQuotaRouter(Router *gin.RouterGroup) {
 		ResourceRequestRouter.POST("/:request_id/reject", v1.RejectResourceRequest)
 	}
 }
+
+// InitResourceReportRouter 初始化资源报告路由
+func InitResourceReportRouter(Router *gin.RouterGroup) {
+	ResourceReportRouter := Router.Group("/resource-report").Use(middleware.JWTAuth())
+	{
+		ResourceReportRouter.POST("", v1.CreateResourceReport)
+		ResourceReportRouter.GET("", v1.GetAllResourceReports)
+		ResourceReportRouter.GET("/:id", v1.GetResourceReportByID)
+		ResourceReportRouter.PUT("/:id", v1.UpdateResourceReport)
+		ResourceReportRouter.DELETE("/:id", v1.DeleteResourceReport)
+	}
+}

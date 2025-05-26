@@ -272,6 +272,9 @@ definitions:
       cpu_quota:
         description: CPU配额
         type: number
+      cpu_usage:
+        description: CPU使用量
+        type: number
       created_at:
         type: string
       id:
@@ -279,13 +282,40 @@ definitions:
       memory_quota:
         description: 内存配额
         type: integer
+      memory_usage:
+        description: 内存使用量
+        type: integer
       storage_quota:
         description: 存储配额
+        type: integer
+      storage_usage:
+        description: 存储使用量
         type: integer
       tenant_id:
         description: 租户ID
         type: string
       updated_at:
+        type: string
+    type: object
+  model.ResourceReport:
+    properties:
+      cpu_quota:
+        type: number
+      cpu_usage:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: integer
+      memory_quota:
+        type: integer
+      memory_usage:
+        type: integer
+      storage_quota:
+        type: integer
+      storage_usage:
+        type: integer
+      tenant_id:
         type: string
     type: object
   model.Stage:
@@ -2383,6 +2413,131 @@ paths:
       summary: 更新资源配额
       tags:
       - 资源配额管理
+  /resource-report:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有资源报告
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.ResourceReport'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取所有资源报告
+      tags:
+      - 资源报告管理
+    post:
+      consumes:
+      - application/json
+      description: 创建资源报告
+      parameters:
+      - description: 资源报告信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/model.ResourceReport'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建资源报告
+      tags:
+      - 资源报告管理
+  /resource-report/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据 ID 删除资源报告
+      parameters:
+      - description: 资源报告 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除资源报告
+      tags:
+      - 资源报告管理
+    get:
+      consumes:
+      - application/json
+      description: 根据 ID 获取资源报告
+      parameters:
+      - description: 资源报告 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ResourceReport'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 根据 ID 获取资源报告
+      tags:
+      - 资源报告管理
+    put:
+      consumes:
+      - application/json
+      description: 根据 ID 更新资源报告
+      parameters:
+      - description: 资源报告 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新的资源报告信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/model.ResourceReport'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新资源报告
+      tags:
+      - 资源报告管理
   /resource-request:
     post:
       consumes:

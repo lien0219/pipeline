@@ -16,6 +16,9 @@ type ResourceQuota struct {
 	CPUQuota     float64        `gorm:"not null" json:"cpu_quota"`                 // CPU配额
 	MemoryQuota  int64          `gorm:"not null" json:"memory_quota"`              // 内存配额
 	StorageQuota int64          `gorm:"not null" json:"storage_quota"`             // 存储配额
+	CPUUsage     float64        `gorm:"not null" json:"cpu_usage"`                 // CPU使用量
+	MemoryUsage  int64          `gorm:"not null" json:"memory_usage"`              // 内存使用量
+	StorageUsage int64          `gorm:"not null" json:"storage_usage"`             // 存储使用量
 }
 
 // TableName 设置表名
@@ -39,4 +42,22 @@ type TenantResourceRequest struct {
 // TableName 设置表名
 func (TenantResourceRequest) TableName() string {
 	return "tenant_resource_requests"
+}
+
+// ResourceReport 资源使用报告模型
+type ResourceReport struct {
+	ID           uint      `gorm:"primarykey" json:"id"`
+	CreatedAt    time.Time `json:"created_at"`
+	TenantID     string    `json:"tenant_id"`
+	CPUUsage     float64   `json:"cpu_usage"`
+	CPUQuota     float64   `json:"cpu_quota"`
+	MemoryUsage  int64     `json:"memory_usage"`
+	MemoryQuota  int64     `json:"memory_quota"`
+	StorageUsage int64     `json:"storage_usage"`
+	StorageQuota int64     `json:"storage_quota"`
+}
+
+// TableName 设置表名
+func (ResourceReport) TableName() string {
+	return "resource_reports"
 }
