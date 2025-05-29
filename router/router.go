@@ -248,3 +248,21 @@ func InitResourceReportRouter(Router *gin.RouterGroup) {
 		ResourceReportRouter.DELETE("/:id", v1.DeleteResourceReport)
 	}
 }
+
+// InitWebhookRouter 初始化webhook路由
+func InitWebhookRouter(Router *gin.RouterGroup) {
+	WebhookRouter := Router.Group("/webhook").Use(middleware.JWTAuth())
+	{
+		WebhookRouter.POST("", v1.CreateWebhook)
+		WebhookRouter.GET("/pipeline/:pipelineId", v1.GetWebhooksByPipelineID)
+	}
+}
+
+// InitCanaryRouter 初始化金丝雀发布路由
+func InitCanaryRouter(Router *gin.RouterGroup) {
+	CanaryRouter := Router.Group("/canary").Use(middleware.JWTAuth())
+	{
+		CanaryRouter.POST("", v1.CreateCanaryRelease)
+		CanaryRouter.POST("/:id/deploy", v1.DeployCanaryRelease)
+	}
+}
