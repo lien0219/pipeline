@@ -8,12 +8,14 @@ import (
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 // K8sService Kubernetes 服务结构体
 type K8sService struct {
 	ClientSet *kubernetes.Clientset
+	config    *rest.Config
 }
 
 var K8sSvc *K8sService
@@ -92,5 +94,6 @@ func NewK8sService(kubeconfigPath string) (*K8sService, error) {
 
 	return &K8sService{
 		ClientSet: clientset,
+		config:    config,
 	}, nil
 }

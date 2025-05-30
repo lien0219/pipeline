@@ -128,16 +128,34 @@ func DeleteCronJobHandler(c *gin.Context) {
 func CreateDeploymentHandler(c *gin.Context) {
 	var deployment appsv1.Deployment
 	if err := c.ShouldBindJSON(&deployment); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "请求参数错误",
+			"error":   err.Error(),
+		})
 		return
 	}
+
 	namespace := c.Param("namespace")
+	if namespace == "" {
+		namespace = "default" // 设置默认namespace
+	}
+
 	result, err := K8sSvc.CreateDeployment(namespace, &deployment)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "创建Deployment失败",
+			"error":   err.Error(),
+		})
 		return
 	}
-	c.JSON(http.StatusCreated, result)
+
+	c.JSON(http.StatusCreated, gin.H{
+		"code":    201,
+		"message": "创建成功",
+		"data":    result,
+	})
 }
 
 // GetDeploymentHandler 获取 Deployment 的处理函数
