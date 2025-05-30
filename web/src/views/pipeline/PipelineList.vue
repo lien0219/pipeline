@@ -3,7 +3,6 @@
     <div class="page-header">
       <div class="header-title">
         <h2>流水线管理</h2>
-        <p>管理和监控所有CI/CD流水线</p>
       </div>
 
       <div class="header-actions">
@@ -18,11 +17,19 @@
       <div class="filter-container">
         <el-form :inline="true" :model="filterForm" class="filter-form">
           <el-form-item label="名称">
-            <el-input v-model="filterForm.name" placeholder="流水线名称" clearable />
+            <el-input
+              v-model="filterForm.name"
+              placeholder="流水线名称"
+              clearable
+            />
           </el-form-item>
 
           <el-form-item label="状态">
-            <el-select v-model="filterForm.status" placeholder="全部状态" clearable>
+            <el-select
+              v-model="filterForm.status"
+              placeholder="全部状态"
+              clearable
+            >
               <el-option label="成功" value="success" />
               <el-option label="运行中" value="running" />
               <el-option label="失败" value="failed" />
@@ -44,12 +51,17 @@
       </div>
 
       <el-table
-          :data="pipelines"
-          style="width: 100%"
-          v-loading="loading"
-          @sort-change="handleSortChange"
+        :data="pipelines"
+        style="width: 100%"
+        v-loading="loading"
+        @sort-change="handleSortChange"
       >
-        <el-table-column prop="name" label="名称" sortable="custom" min-width="180">
+        <el-table-column
+          prop="name"
+          label="名称"
+          sortable="custom"
+          min-width="180"
+        >
           <template #default="{ row }">
             <router-link :to="`/pipelines/${row.id}`" class="pipeline-link">
               {{ row.name }}
@@ -57,7 +69,12 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
+        <el-table-column
+          prop="description"
+          label="描述"
+          min-width="200"
+          show-overflow-tooltip
+        />
 
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
@@ -71,11 +88,16 @@
 
         <el-table-column prop="last_run" label="最近执行" width="180">
           <template #default="{ row }">
-            {{ row.last_run ? formatDate(row.last_run) : '从未执行' }}
+            {{ row.last_run ? formatDate(row.last_run) : "从未执行" }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="created_at" label="创建时间" width="180" sortable="custom">
+        <el-table-column
+          prop="created_at"
+          label="创建时间"
+          width="180"
+          sortable="custom"
+        >
           <template #default="{ row }">
             {{ formatDate(row.created_at) }}
           </template>
@@ -84,20 +106,20 @@
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button
-                link
-                type="primary"
-                size="small"
-                @click="triggerPipeline(row.id)"
-                :disabled="row.status === 'running'"
+              link
+              type="primary"
+              size="small"
+              @click="triggerPipeline(row.id)"
+              :disabled="row.status === 'running'"
             >
               运行
             </el-button>
 
             <el-button
-                link
-                type="primary"
-                size="small"
-                @click="$router.push(`/pipelines/${row.id}`)"
+              link
+              type="primary"
+              size="small"
+              @click="$router.push(`/pipelines/${row.id}`)"
             >
               详情
             </el-button>
@@ -108,7 +130,9 @@
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item @click="$router.push(`/pipelines/${row.id}/edit`)">
+                  <el-dropdown-item
+                    @click="$router.push(`/pipelines/${row.id}/edit`)"
+                  >
                     编辑
                   </el-dropdown-item>
                   <el-dropdown-item @click="clonePipeline(row)">
@@ -126,13 +150,13 @@
 
       <div class="pagination-container">
         <el-pagination
-            v-model:current-page="pagination.currentPage"
-            v-model:page-size="pagination.pageSize"
-            :page-sizes="[10, 20, 30, 50]"
-            :total="pagination.total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
+          v-model:current-page="pagination.currentPage"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 30, 50]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
         />
       </div>
     </el-card>
@@ -140,11 +164,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { usePipelineStore } from '@/stores/pipeline';
-import { Plus, Search, RefreshRight, ArrowDown } from '@element-plus/icons-vue';
-import dayjs from 'dayjs';
+import { ref, reactive, onMounted } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { usePipelineStore } from "@/stores/pipeline";
+import { Plus, Search, RefreshRight, ArrowDown } from "@element-plus/icons-vue";
+import dayjs from "dayjs";
 
 const pipelineStore = usePipelineStore();
 const loading = ref(false);
@@ -152,21 +176,21 @@ const pipelines = ref([]);
 
 // 筛选表单
 const filterForm = reactive({
-  name: '',
-  status: ''
+  name: "",
+  status: "",
 });
 
 // 分页
 const pagination = reactive({
   page: 1,
   pageSize: 10,
-  total: 0
+  total: 0,
 });
 
 // 排序
 const sortParams = reactive({
-  prop: 'created_at',
-  order: 'descending'
+  prop: "created_at",
+  order: "descending",
 });
 
 // 获取流水线列表
@@ -178,16 +202,16 @@ const fetchPipelines = async () => {
       page: pagination.currentPage,
       limit: pagination.pageSize,
       sort_by: sortParams.prop,
-      sort_order: sortParams.order === 'ascending' ? 'asc' : 'desc',
+      sort_order: sortParams.order === "ascending" ? "asc" : "desc",
       name: filterForm.name || undefined,
-      status: filterForm.status || undefined
+      status: filterForm.status || undefined,
     };
 
     const response = await pipelineStore.fetchPipelines(params);
-    pipelines.value = response.data || [];
-    pagination.total = response.total || 0;
+    pipelines.value = response.data.list || [];
+    pagination.total = response.data.total || 0;
   } catch (error) {
-    console.error('Failed to fetch pipelines:', error);
+    console.error("Failed to fetch pipelines:", error);
   } finally {
     loading.value = false;
   }
@@ -201,8 +225,8 @@ const handleFilter = () => {
 
 // 重置筛选
 const resetFilter = () => {
-  filterForm.name = '';
-  filterForm.status = '';
+  filterForm.name = "";
+  filterForm.status = "";
   pagination.currentPage = 1;
   fetchPipelines();
 };
@@ -224,8 +248,8 @@ const handleSortChange = ({ prop, order }) => {
     sortParams.prop = prop;
     sortParams.order = order;
   } else {
-    sortParams.prop = 'created_at';
-    sortParams.order = 'descending';
+    sortParams.prop = "created_at";
+    sortParams.order = "descending";
   }
   fetchPipelines();
 };
@@ -234,67 +258,77 @@ const handleSortChange = ({ prop, order }) => {
 const triggerPipeline = async (id) => {
   try {
     await pipelineStore.triggerPipeline(id);
-    ElMessage.success('流水线已触发');
+    ElMessage.success("流水线已触发");
     fetchPipelines();
   } catch (error) {
-    console.error('Failed to trigger pipeline:', error);
+    console.error("Failed to trigger pipeline:", error);
   }
 };
 
 // 克隆流水线
 const clonePipeline = (pipeline) => {
-  ElMessage.info('克隆功能开发中');
+  ElMessage.info("克隆功能开发中");
 };
 
 // 确认删除
 const confirmDelete = (pipeline) => {
   ElMessageBox.confirm(
-      `确定要删除流水线 "${pipeline.name}" 吗？此操作不可恢复。`,
-      '删除确认',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
+    `确定要删除流水线 "${pipeline.name}" 吗？此操作不可恢复。`,
+    "删除确认",
+    {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    }
   )
-      .then(async () => {
-        try {
-          await pipelineStore.deletePipeline(pipeline.id);
-          ElMessage.success('流水线已删除');
-          fetchPipelines();
-        } catch (error) {
-          console.error('Failed to delete pipeline:', error);
-        }
-      })
-      .catch(() => {
-        // 取消删除
-      });
+    .then(async () => {
+      try {
+        await pipelineStore.deletePipeline(pipeline.id);
+        ElMessage.success("流水线已删除");
+        fetchPipelines();
+      } catch (error) {
+        console.error("Failed to delete pipeline:", error);
+      }
+    })
+    .catch(() => {
+      // 取消删除
+    });
 };
 
 // 格式化状态
 const getStatusType = (status) => {
   switch (status) {
-    case 'success': return 'success';
-    case 'running': return 'primary';
-    case 'failed': return 'danger';
-    case 'pending': return 'info';
-    default: return 'info';
+    case "success":
+      return "success";
+    case "running":
+      return "primary";
+    case "failed":
+      return "danger";
+    case "pending":
+      return "info";
+    default:
+      return "info";
   }
 };
 
 const getStatusText = (status) => {
   switch (status) {
-    case 'success': return '成功';
-    case 'running': return '运行中';
-    case 'failed': return '失败';
-    case 'pending': return '等待中';
-    default: return '未知';
+    case "success":
+      return "成功";
+    case "running":
+      return "运行中";
+    case "failed":
+      return "失败";
+    case "pending":
+      return "等待中";
+    default:
+      return "未知";
   }
 };
 
 // 格式化日期
 const formatDate = (date) => {
-  return dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+  return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 };
 
 onMounted(() => {

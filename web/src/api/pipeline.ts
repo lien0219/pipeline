@@ -1,55 +1,55 @@
-import http from "./http"
+import http from "./http";
 
 export const pipelineApi = {
-    getPipelines(params) {
-        return http.get("/v1/pipeline", { params })
-    },
+  getPipelines(params) {
+    return http.get("/v1/pipeline", { params });
+  },
 
-    getPipelineById(id) {
-        return http.get(`/pipelines/${id}`)
-    },
+  getPipelineById(id) {
+    return http.get(`/v1/pipelines/${id}`);
+  },
 
-    createPipeline(data) {
-        return http.post("/pipelines", data)
-    },
+  createPipeline(data) {
+    return http.post("/v1/pipelines", data);
+  },
 
-    updatePipeline(id, data) {
-        return http.put(`/pipelines/${id}`, data)
-    },
+  updatePipeline(id, data) {
+    return http.put(`/v1/pipelines/${id}`, data);
+  },
 
-    deletePipeline(id) {
-        return http.delete(`/pipelines/${id}`)
-    },
+  deletePipeline(id) {
+    return http.delete(`/v1/pipelines/${id}`);
+  },
 
-    triggerPipeline(id) {
-        return http.post(`/pipelines/${id}/trigger`)
-    },
+  triggerPipeline(id) {
+    return http.post(`/v1/pipelines/${id}/trigger`);
+  },
 
-    getPipelineRuns(id, params) {
-        return http.get(`/pipelines/${id}/runs`, { params })
-    },
+  getPipelineRuns(id, params) {
+    return http.get(`/v1/pipelines/${id}/runs`, { params });
+  },
 
-    getPipelineRunById(pipelineId, runId) {
-        return http.get(`/pipelines/${pipelineId}/runs/${runId}`)
-    },
+  getPipelineRunById(pipelineId, runId) {
+    return http.get(`/v1/pipelines/${pipelineId}/runs/${runId}`);
+  },
 
-    getPipelineRunLogs(pipelineId, runId) {
-        return http.get(`/pipelines/${pipelineId}/runs/${runId}/logs`)
-    },
+  getPipelineRunLogs(pipelineId, runId) {
+    return http.get(`/v1/pipelines/${pipelineId}/runs/${runId}/logs`);
+  },
 
-    cancelPipelineRun(pipelineId, runId) {
-        return http.post(`/pipelines/${pipelineId}/runs/${runId}/cancel`)
-    },
+  cancelPipelineRun(pipelineId, runId) {
+    return http.post(`/v1/pipelines/${pipelineId}/runs/${runId}/cancel`);
+  },
 
-    getArtifacts(params) {
-        return http.get("/artifacts", { params })
-    },
+  getArtifacts(params) {
+    return http.get("/v1/artifacts", { params });
+  },
 
-    getArtifactById(id) {
-        return http.get(`/artifacts/${id}`)
-    },
+  getArtifactById(id) {
+    return http.get(`/v1/artifacts/${id}`);
+  },
 
-    deleteArtifact(id) {
-        return http.delete(`/artifacts/${id}`)
-    },
-}
+  deleteArtifact(id) {
+    return http.delete(`/v1/artifacts/${id}`);
+  },
+};

@@ -64,7 +64,7 @@
           </el-row>
 
           <div class="chart-container">
-            <div ref="pipelineChart" style="width: 100%; height: 300px;"></div>
+            <div ref="pipelineChart" style="width: 100%; height: 300px"></div>
           </div>
         </el-card>
 
@@ -78,7 +78,11 @@
             </div>
           </template>
 
-          <el-table :data="recentPipelines" style="width: 100%" v-loading="loading">
+          <el-table
+            :data="recentPipelines"
+            style="width: 100%"
+            v-loading="loading"
+          >
             <el-table-column prop="name" label="名称" min-width="180">
               <template #default="{ row }">
                 <router-link :to="`/pipelines/${row.id}`" class="pipeline-link">
@@ -97,11 +101,11 @@
 
             <el-table-column prop="branch" label="分支" width="120" />
 
-            <el-table-column prop="duration" label="耗时" width="120">
+            <!-- <el-table-column prop="duration" label="耗时" width="120">
               <template #default="{ row }">
                 {{ formatDuration(row.duration) }}
               </template>
-            </el-table-column>
+            </el-table-column> -->
 
             <el-table-column prop="created_at" label="创建时间" width="180">
               <template #default="{ row }">
@@ -112,11 +116,11 @@
             <el-table-column label="操作" width="120" fixed="right">
               <template #default="{ row }">
                 <el-button
-                    link
-                    type="primary"
-                    size="small"
-                    @click="triggerPipeline(row.id)"
-                    :disabled="row.status === 'running'"
+                  link
+                  type="primary"
+                  size="small"
+                  @click="triggerPipeline(row.id)"
+                  :disabled="row.status === 'running'"
                 >
                   运行
                 </el-button>
@@ -137,11 +141,11 @@
           <div class="activity-timeline">
             <el-timeline>
               <el-timeline-item
-                  v-for="(activity, index) in activities"
-                  :key="index"
-                  :type="getActivityType(activity.type)"
-                  :timestamp="formatDate(activity.timestamp)"
-                  :hollow="activity.hollow"
+                v-for="(activity, index) in activities"
+                :key="index"
+                :type="getActivityType(activity.type)"
+                :timestamp="formatDate(activity.timestamp)"
+                :hollow="activity.hollow"
               >
                 {{ activity.content }}
               </el-timeline-item>
@@ -184,18 +188,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { usePipelineStore } from '@/stores/pipeline';
-import { Check, Loading, WarningFilled, Clock, Refresh, Plus, Document, SetUp, Setting } from '@element-plus/icons-vue';
-import * as echarts from 'echarts/core';
-import { LineChart } from 'echarts/charts';
-import { GridComponent, TooltipComponent, TitleComponent, LegendComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
-import dayjs from 'dayjs';
-import { ElMessage } from 'element-plus';
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { usePipelineStore } from "@/stores/pipeline";
+import {
+  Check,
+  Loading,
+  WarningFilled,
+  Clock,
+  Refresh,
+  Plus,
+  Document,
+  SetUp,
+  Setting,
+} from "@element-plus/icons-vue";
+import * as echarts from "echarts/core";
+import { LineChart } from "echarts/charts";
+import {
+  GridComponent,
+  TooltipComponent,
+  TitleComponent,
+  LegendComponent,
+} from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
+import dayjs from "dayjs";
+import { ElMessage } from "element-plus";
 
-echarts.use([LineChart, GridComponent, TooltipComponent, TitleComponent, LegendComponent, CanvasRenderer]);
+echarts.use([
+  LineChart,
+  GridComponent,
+  TooltipComponent,
+  TitleComponent,
+  LegendComponent,
+  CanvasRenderer,
+]);
 
 const router = useRouter();
 const pipelineStore = usePipelineStore();
@@ -207,7 +233,7 @@ const stats = ref({
   success: 0,
   running: 0,
   failed: 0,
-  pending: 0
+  pending: 0,
 });
 
 const recentPipelines = ref([]);
@@ -218,29 +244,57 @@ const fetchData = async () => {
   loading.value = true;
   try {
     // 获取流水线数据
-    const response = await pipelineStore.fetchPipelines({ page:1,pageSize:10 });
-    recentPipelines.value = response.data || [];
+    const response = await pipelineStore.fetchPipelines({
+      page: 1,
+      pageSize: 10,
+    });
+    recentPipelines.value = response.data.list || [];
 
     // 统计数据
     stats.value = {
       success: 12,
       running: 3,
       failed: 2,
-      pending: 5
+      pending: 5,
     };
 
     // 模拟活动数据
     activities.value = [
-      { type: 'success', content: '流水线 "Frontend Deploy" 构建成功', timestamp: new Date(), hollow: false },
-      { type: 'warning', content: '流水线 "Backend API" 构建失败', timestamp: new Date(Date.now() - 3600000), hollow: false },
-      { type: 'primary', content: '用户 admin 创建了新的流水线 "Database Migration"', timestamp: new Date(Date.now() - 7200000), hollow: false },
-      { type: 'info', content: '系统更新完成', timestamp: new Date(Date.now() - 86400000), hollow: true },
-      { type: 'success', content: '流水线 "Mobile App" 部署成功', timestamp: new Date(Date.now() - 172800000), hollow: true }
+      {
+        type: "success",
+        content: '流水线 "Frontend Deploy" 构建成功',
+        timestamp: new Date(),
+        hollow: false,
+      },
+      {
+        type: "warning",
+        content: '流水线 "Backend API" 构建失败',
+        timestamp: new Date(Date.now() - 3600000),
+        hollow: false,
+      },
+      {
+        type: "primary",
+        content: '用户 admin 创建了新的流水线 "Database Migration"',
+        timestamp: new Date(Date.now() - 7200000),
+        hollow: false,
+      },
+      {
+        type: "info",
+        content: "系统更新完成",
+        timestamp: new Date(Date.now() - 86400000),
+        hollow: true,
+      },
+      {
+        type: "success",
+        content: '流水线 "Mobile App" 部署成功',
+        timestamp: new Date(Date.now() - 172800000),
+        hollow: true,
+      },
     ];
 
     initChart();
   } catch (error) {
-    console.error('Failed to fetch dashboard data:', error);
+    console.error("Failed to fetch dashboard data:", error);
   } finally {
     loading.value = false;
   }
@@ -258,96 +312,96 @@ const initChart = () => {
 
   const option = {
     title: {
-      text: '流水线执行趋势',
-      left: 'center'
+      text: "流水线执行趋势",
+      left: "center",
     },
     tooltip: {
-      trigger: 'axis'
+      trigger: "axis",
     },
     legend: {
-      data: ['成功', '失败', '总数'],
-      bottom: 0
+      data: ["成功", "失败", "总数"],
+      bottom: 0,
     },
     grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '10%',
-      top: '15%',
-      containLabel: true
+      left: "3%",
+      right: "4%",
+      bottom: "10%",
+      top: "15%",
+      containLabel: true,
     },
     xAxis: {
-      type: 'category',
+      type: "category",
       boundaryGap: false,
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      data: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
     },
     yAxis: {
-      type: 'value'
+      type: "value",
     },
     series: [
       {
-        name: '成功',
-        type: 'line',
+        name: "成功",
+        type: "line",
         data: [5, 7, 6, 9, 8, 7, 10],
         itemStyle: {
-          color: '#67C23A'
+          color: "#67C23A",
         },
         areaStyle: {
           color: {
-            type: 'linear',
+            type: "linear",
             x: 0,
             y: 0,
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(103, 194, 58, 0.3)' },
-              { offset: 1, color: 'rgba(103, 194, 58, 0.1)' }
-            ]
-          }
-        }
+              { offset: 0, color: "rgba(103, 194, 58, 0.3)" },
+              { offset: 1, color: "rgba(103, 194, 58, 0.1)" },
+            ],
+          },
+        },
       },
       {
-        name: '失败',
-        type: 'line',
+        name: "失败",
+        type: "line",
         data: [2, 1, 3, 1, 2, 0, 1],
         itemStyle: {
-          color: '#F56C6C'
+          color: "#F56C6C",
         },
         areaStyle: {
           color: {
-            type: 'linear',
+            type: "linear",
             x: 0,
             y: 0,
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(245, 108, 108, 0.3)' },
-              { offset: 1, color: 'rgba(245, 108, 108, 0.1)' }
-            ]
-          }
-        }
+              { offset: 0, color: "rgba(245, 108, 108, 0.3)" },
+              { offset: 1, color: "rgba(245, 108, 108, 0.1)" },
+            ],
+          },
+        },
       },
       {
-        name: '总数',
-        type: 'line',
+        name: "总数",
+        type: "line",
         data: [7, 8, 9, 10, 10, 7, 11],
         itemStyle: {
-          color: '#409EFF'
+          color: "#409EFF",
         },
         areaStyle: {
           color: {
-            type: 'linear',
+            type: "linear",
             x: 0,
             y: 0,
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(64, 158, 255, 0.3)' },
-              { offset: 1, color: 'rgba(64, 158, 255, 0.1)' }
-            ]
-          }
-        }
-      }
-    ]
+              { offset: 0, color: "rgba(64, 158, 255, 0.3)" },
+              { offset: 1, color: "rgba(64, 158, 255, 0.1)" },
+            ],
+          },
+        },
+      },
+    ],
   };
 
   chart.value.setOption(option);
@@ -362,52 +416,66 @@ const refreshData = () => {
 const triggerPipeline = async (id) => {
   try {
     await pipelineStore.triggerPipeline(id);
-    ElMessage.success('流水线已触发');
+    ElMessage.success("流水线已触发");
     refreshData();
   } catch (error) {
-    console.error('Failed to trigger pipeline:', error);
+    console.error("Failed to trigger pipeline:", error);
   }
 };
 
 // 格式化状态
 const getStatusType = (status) => {
   switch (status) {
-    case 'success': return 'success';
-    case 'running': return 'primary';
-    case 'failed': return 'danger';
-    case 'pending': return 'info';
-    default: return 'info';
+    case "success":
+      return "success";
+    case "running":
+      return "primary";
+    case "failed":
+      return "danger";
+    case "pending":
+      return "info";
+    default:
+      return "info";
   }
 };
 
 const getStatusText = (status) => {
   switch (status) {
-    case 'success': return '成功';
-    case 'running': return '运行中';
-    case 'failed': return '失败';
-    case 'pending': return '等待中';
-    default: return '未知';
+    case "success":
+      return "成功";
+    case "running":
+      return "运行中";
+    case "failed":
+      return "失败";
+    case "pending":
+      return "等待中";
+    default:
+      return "未知";
   }
 };
 
 // 格式化活动类型
 const getActivityType = (type) => {
   switch (type) {
-    case 'success': return 'success';
-    case 'warning': return 'warning';
-    case 'primary': return 'primary';
-    default: return 'info';
+    case "success":
+      return "success";
+    case "warning":
+      return "warning";
+    case "primary":
+      return "primary";
+    default:
+      return "info";
   }
 };
 
 // 格式化日期
 const formatDate = (date) => {
-  return dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+  return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 };
 
 // 格式化持续时间
 const formatDuration = (seconds) => {
-  if (!seconds) return '0s';
+  if (!seconds) return "0s";
 
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -428,11 +496,11 @@ const handleResize = () => {
 
 onMounted(() => {
   fetchData();
-  window.addEventListener('resize', handleResize);
+  window.addEventListener("resize", handleResize);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener("resize", handleResize);
   if (chart.value) {
     chart.value.dispose();
     chart.value = null;
