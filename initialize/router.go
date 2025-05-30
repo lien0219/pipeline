@@ -25,10 +25,17 @@ func InitRouter() *gin.Engine {
 
 	r := gin.New()
 
+	r.MaxMultipartMemory = 8 << 20
 	// 使用中间件
 	r.Use(middleware.GinLogger())
 	r.Use(middleware.GinRecovery(true))
+	r.Use(middleware.SecurityHeaders())
+	r.Use(middleware.AuditLogMiddleware())
 	r.Use(ginzap.RecoveryWithZap(global.Log.Desugar(), true))
+	// 限制请求体大小
+	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+		SkipPaths: []string{"/health"},
+	}))
 
 	// 跨域配置
 	corsConfig := cors.Config{

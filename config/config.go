@@ -11,6 +11,7 @@ type System struct {
 	UseHttps      bool   `mapstructure:"use_https" json:"use_https" yaml:"use_https"`                // 使用https
 	JwtSecret     string `mapstructure:"jwt_secret" json:"jwt_secret" yaml:"jwt_secret"`             // jwt密钥
 	JwtExpire     int    `mapstructure:"jwt_expire" json:"jwt_expire" yaml:"jwt_expire"`             // jwt过期时间
+	EncryptKey    string `mapstructure:"encrypt_key" json:"encrypt_key" yaml:"encrypt_key"`          // 加密密钥字段
 }
 
 // Log 日志配置

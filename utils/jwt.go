@@ -42,11 +42,16 @@ func NewJWT() *JWT {
 // CreateToken 创建Token
 func (j *JWT) CreateToken(claims CustomClaims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token.Header["kid"] = RandomString(8) // 添加key id
+	token.Header["cty"] = "JWT"           // 明确内容类型
 	return token.SignedString(j.SigningKey)
 }
 
 // ParseToken 解析Token
 func (j *JWT) ParseToken(tokenString string) (*CustomClaims, error) {
+	if len(tokenString) < 50 {
+		return nil, errors.New("token格式错误")
+	}
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return j.SigningKey, nil
 	})

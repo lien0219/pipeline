@@ -9,6 +9,7 @@ system:
   use_https: false # 是否使用https
   jwt_secret: RThBd1J4SWwyazNxU09aWG92RjA3TFBwWTQ2c25oZWQ= # JWT密钥
   jwt_expire: 86400 # JWT过期时间(秒)
+  encrypt_key: "RThBd1J4SWwyazNxU09aWG92RjA3TFBwWTQ2c25oZWQ="
 
 # 日志配置
 log:
