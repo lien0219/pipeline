@@ -1,17 +1,21 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"gin_pipeline/global"
 	"gin_pipeline/model"
-	"go.uber.org/zap"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // WorkflowService 工作流服务
 type WorkflowService struct {
-	engine *WorkflowEngine
+	engine    *WorkflowEngine
+	semaphore chan struct{} //并发控制信号量
 }
 
 // NewWorkflowService 创建工作流服务
@@ -24,7 +28,8 @@ func NewWorkflowService() *WorkflowService {
 	engine.RegisterExecutor("kubernetes", &KubernetesTaskExecutor{})
 
 	return &WorkflowService{
-		engine: engine,
+		engine:    engine,
+		semaphore: make(chan struct{}, 20), //限制并发数为20
 	}
 }
 
@@ -70,7 +75,16 @@ func (s *WorkflowService) TriggerWorkflow(pipelineID uint, userID uint, gitBranc
 	}
 
 	// 异步执行工作流
-	go s.executeWorkflow(dag, &pipelineRun)
+	// go s.executeWorkflow(dag, &pipelineRun)
+	select {
+	case s.semaphore <- struct{}{}:
+		go func() {
+			defer func() { <-s.semaphore }()
+			s.executeWorkflow(dag, &pipelineRun)
+		}()
+	case <-time.After(30 * time.Second):
+		return nil, fmt.Errorf("系统繁忙，请稍后重试")
+	}
 
 	return &pipelineRun, nil
 }
@@ -103,8 +117,21 @@ func (s *WorkflowService) executeWorkflow(dag *model.DAG, pipelineRun *model.Pip
 	}
 
 	// 执行工作流
-	ctx := context.Background()
-	err := s.engine.ExecuteWorkflow(ctx, tasks, pipelineRun.ID)
+	// ctx := context.Background()
+	// err := s.engine.ExecuteWorkflow(ctx, tasks, pipelineRun.ID)
+	// 添加执行超时控制
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	defer cancel()
+
+	// 带重试的执行逻辑
+	var err error
+	for retry := 0; retry < 3; retry++ {
+		err = s.engine.ExecuteWorkflow(ctx, tasks, pipelineRun.ID)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Duration(retry+1) * 5 * time.Second) // 指数退避
+	}
 
 	// 更新运行结果
 	now := time.Now()
@@ -116,37 +143,68 @@ func (s *WorkflowService) executeWorkflow(dag *model.DAG, pipelineRun *model.Pip
 	}
 
 	// 收集任务日志
-	taskLogs := make(map[string]map[string]string)
-	for _, task := range tasks {
-		if taskLogs[task.Type] == nil {
-			taskLogs[task.Type] = make(map[string]string)
-		}
-		taskLogs[task.Type][task.ID] = task.Logs
-	}
-
-	logsJSON, _ := json.Marshal(taskLogs)
+	// taskLogs := make(map[string]map[string]string)
+	// for _, task := range tasks {
+	// 	if taskLogs[task.Type] == nil {
+	// 		taskLogs[task.Type] = make(map[string]string)
+	// 	}
+	// 	taskLogs[task.Type][task.ID] = task.Logs
+	// }
+	// logsJSON, _ := json.Marshal(taskLogs)
 
 	updates := map[string]interface{}{
 		"status":   status,
 		"end_time": now,
 		"duration": duration,
-		"logs":     string(logsJSON),
+		"logs":     "",
 	}
+	// 流式处理日志收集
+	var logsBuffer bytes.Buffer
+	encoder := json.NewEncoder(&logsBuffer)
+	encoder.SetEscapeHTML(false)
 
-	if err := global.DB.Model(pipelineRun).Updates(updates).Error; err != nil {
+	logsBuffer.WriteString(`{"tasks":{`)
+	first := true
+	for _, task := range tasks {
+		if !first {
+			logsBuffer.WriteByte(',')
+		}
+		first = false
+		encoder.Encode(task.Type + `":"` + task.ID + `":`)
+		encoder.Encode(task.Logs)
+	}
+	logsBuffer.WriteString(`}}`)
+	updates["logs"] = logsBuffer.String()
+
+	// 批量更新任务状态
+	tx := global.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Model(pipelineRun).Updates(updates).Error; err != nil {
+		tx.Rollback()
 		global.Log.Error("更新流水线运行结果失败", zap.Error(err))
 		return
 	}
 
-	// 更新流水线状态
-	if err := global.DB.Model(&model.Pipeline{}).Where("id = ?", pipelineRun.PipelineID).Update("status", status).Error; err != nil {
+	if err := tx.Model(&model.Pipeline{}).Where("id = ?", pipelineRun.PipelineID).Update("status", status).Error; err != nil {
+		tx.Rollback()
 		global.Log.Error("更新流水线状态失败", zap.Error(err))
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		global.Log.Error("提交事务失败", zap.Error(err))
 		return
 	}
 
 	global.Log.Info("工作流执行完成",
 		zap.Uint("runID", pipelineRun.ID),
 		zap.String("status", status))
+
 }
 
 // CancelWorkflow 取消工作流
