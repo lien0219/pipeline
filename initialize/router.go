@@ -55,14 +55,41 @@ func InitRouter() *gin.Engine {
 	r.Use(cors.New(corsConfig))
 
 	// 健康检查
+	// @Summary 健康检查
+	// @Description 检查服务健康状态
+	// @Tags 系统状态
+	// @Accept json
+	// @Produce json
+	// @Success 200 {object} map[string]interface{} "健康状态信息"
+	// @Router /health [get]
 	r.GET("/health", func(c *gin.Context) {
+		sqlDB, err := global.DB.DB()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status": "error",
+				"error":  err.Error(),
+			})
+			return
+		}
+		stats := sqlDB.Stats()
 		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
+			"status":  "ok",
+			"version": global.Version,
+			"uptime":  time.Since(global.StartTime).String(),
+			"database": gin.H{
+				"max_open_connections": stats.MaxOpenConnections,
+				"open_connections":     stats.OpenConnections,
+				"in_use":               stats.InUse,
+				"idle":                 stats.Idle,
+			},
 		})
 	})
 
 	// Swagger文档
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/swagger/*any", func(c *gin.Context) {
+		c.Header("Content-Security-Policy", "default-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:")
+		ginSwagger.WrapHandler(swaggerFiles.Handler)(c)
+	})
 
 	// 注册路由
 	apiGroup := r.Group("/api/v1")

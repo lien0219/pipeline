@@ -201,9 +201,20 @@ func (s *WorkflowService) executeWorkflow(dag *model.DAG, pipelineRun *model.Pip
 		return
 	}
 
-	global.Log.Info("工作流执行完成",
+	// global.Log.Info("工作流执行完成",
+	// 	zap.Uint("runID", pipelineRun.ID),
+	// 	zap.String("status", status))
+	startTime := time.Now()
+	logFields := []zap.Field{
+		zap.Uint("pipelineID", pipelineRun.PipelineID),
 		zap.Uint("runID", pipelineRun.ID),
-		zap.String("status", status))
+		zap.String("status", pipelineRun.Status),
+	}
+	defer func() {
+		duration := time.Since(startTime)
+		logFields = append(logFields, zap.Duration("duration", duration))
+		global.Log.Info("工作流执行完成", logFields)
+	}()
 
 }
 

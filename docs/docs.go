@@ -4558,6 +4558,10 @@ const docTemplate = `{
         "model.Pipeline": {
             "type": "object",
             "properties": {
+                "config": {
+                    "description": "加密存储",
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },

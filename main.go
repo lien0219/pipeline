@@ -7,6 +7,7 @@ import (
 	"gin_pipeline/model"
 	"gin_pipeline/service"
 	"gin_pipeline/utils"
+	"time"
 )
 
 // @title           CI/CD Pipeline Visualization API
@@ -107,6 +108,8 @@ func main() {
 		fmt.Printf("存储配额: %d\n", report.StorageQuota)
 	}
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>测试
+
+	global.StartTime = time.Now()
 
 	// 启动服务器
 	port := global.Config.System.Port

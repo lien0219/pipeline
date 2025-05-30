@@ -4,6 +4,7 @@ import (
 	"gin_pipeline/global"
 	"gin_pipeline/model"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +14,11 @@ func SecurityHeaders() gin.HandlerFunc {
 		c.Header("X-Content-Type-Options", "nosniff")
 		c.Header("X-Frame-Options", "DENY")
 		c.Header("X-XSS-Protection", "1; mode=block")
-		c.Header("Content-Security-Policy", "default-src 'self'")
+		if strings.HasPrefix(c.Request.URL.Path, "/swagger") {
+			c.Header("Content-Security-Policy", "default-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:")
+		} else {
+			c.Header("Content-Security-Policy", "default-src 'self'")
+		}
 		c.Next()
 	}
 }

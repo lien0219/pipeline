@@ -204,6 +204,9 @@ definitions:
     type: object
   model.Pipeline:
     properties:
+      config:
+        description: 加密存储
+        type: string
       created_at:
         type: string
       creator:

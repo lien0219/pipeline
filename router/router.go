@@ -11,12 +11,12 @@ import (
 func InitPublicRouter(Router *gin.RouterGroup) {
 	PublicRouter := Router.Group("")
 	{
-		// 健康检查
-		PublicRouter.GET("/health", func(c *gin.Context) {
-			c.JSON(200, gin.H{
-				"status": "ok",
-			})
-		})
+		// // 健康检查
+		// PublicRouter.GET("/health", func(c *gin.Context) {
+		// 	c.JSON(200, gin.H{
+		// 		"status": "ok",
+		// 	})
+		// })
 
 		// 用户注册登录
 		PublicRouter.POST("/user/register", v1.Register)
