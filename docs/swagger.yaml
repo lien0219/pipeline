@@ -62,6 +62,37 @@ definitions:
       usage_count:
         type: integer
     type: object
+  model.CanaryRelease:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      pipeline:
+        $ref: '#/definitions/model.Pipeline'
+      pipeline_id:
+        type: integer
+      pipeline_run:
+        $ref: '#/definitions/model.PipelineRun'
+      pipeline_run_id:
+        type: integer
+      status:
+        type: string
+      target_namespace:
+        type: string
+      target_service:
+        type: string
+      traffic_percent:
+        type: integer
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
   model.DAG:
     properties:
       created_at:
@@ -468,6 +499,32 @@ definitions:
       username:
         type: string
     type: object
+  model.Webhook:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      events:
+        description: 逗号分隔的事件列表
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      pipeline:
+        $ref: '#/definitions/model.Pipeline'
+      pipeline_id:
+        type: integer
+      updated_at:
+        type: string
+      url:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
   model.YAMLSchema:
     properties:
       created_at:
@@ -561,6 +618,30 @@ definitions:
     - content
     - name
     - type
+    type: object
+  request.CreateCanaryRelease:
+    properties:
+      name:
+        type: string
+      pipeline_id:
+        type: integer
+      pipeline_run_id:
+        type: integer
+      target_namespace:
+        type: string
+      target_service:
+        type: string
+      traffic_percent:
+        maximum: 100
+        minimum: 1
+        type: integer
+    required:
+    - name
+    - pipeline_id
+    - pipeline_run_id
+    - target_namespace
+    - target_service
+    - traffic_percent
     type: object
   request.CreateDAG:
     properties:
@@ -727,6 +808,26 @@ definitions:
     required:
     - content
     - version
+    type: object
+  request.CreateWebhook:
+    properties:
+      events:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      pipeline_id:
+        type: integer
+      secret:
+        type: string
+      url:
+        type: string
+    required:
+    - events
+    - name
+    - pipeline_id
+    - url
     type: object
   request.CreateYAMLSchema:
     properties:
@@ -1421,6 +1522,58 @@ paths:
       summary: 应用构建模板
       tags:
       - 构建模板管理
+  /canary:
+    post:
+      consumes:
+      - application/json
+      description: 创建新的金丝雀发布
+      parameters:
+      - description: 金丝雀发布信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateCanaryRelease'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.CanaryRelease'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建金丝雀发布
+      tags:
+      - 金丝雀发布
+  /canary/{id}/deploy:
+    post:
+      consumes:
+      - application/json
+      description: 部署指定的金丝雀发布
+      parameters:
+      - description: 金丝雀发布ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 部署成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 部署金丝雀发布
+      tags:
+      - 金丝雀发布
   /dag:
     post:
       consumes:
@@ -3229,6 +3382,65 @@ paths:
       summary: 用户注册
       tags:
       - 用户管理
+  /webhook:
+    post:
+      consumes:
+      - application/json
+      description: 创建新的webhook
+      parameters:
+      - description: webhook信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateWebhook'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Webhook'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 创建webhook
+      tags:
+      - Webhook管理
+  /webhook/pipeline/{pipelineId}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定流水线的所有webhooks
+      parameters:
+      - description: 流水线ID
+        in: path
+        name: pipelineId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Webhook'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取流水线的webhooks
+      tags:
+      - Webhook管理
   /yaml/history:
     get:
       consumes:

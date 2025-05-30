@@ -649,6 +649,94 @@ const docTemplate = `{
                 }
             }
         },
+        "/canary": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建新的金丝雀发布",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "金丝雀发布"
+                ],
+                "summary": "创建金丝雀发布",
+                "parameters": [
+                    {
+                        "description": "金丝雀发布信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateCanaryRelease"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.CanaryRelease"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/canary/{id}/deploy": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "部署指定的金丝雀发布",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "金丝雀发布"
+                ],
+                "summary": "部署金丝雀发布",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "金丝雀发布ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "部署成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/dag": {
             "post": {
                 "security": [
@@ -3717,6 +3805,109 @@ const docTemplate = `{
                 }
             }
         },
+        "/webhook": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建新的webhook",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Webhook管理"
+                ],
+                "summary": "创建webhook",
+                "parameters": [
+                    {
+                        "description": "webhook信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateWebhook"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Webhook"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/webhook/pipeline/{pipelineId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取指定流水线的所有webhooks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Webhook管理"
+                ],
+                "summary": "获取流水线的webhooks",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "流水线ID",
+                        "name": "pipelineId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Webhook"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/yaml/history": {
             "get": {
                 "security": [
@@ -4152,6 +4343,53 @@ const docTemplate = `{
                 },
                 "usage_count": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.CanaryRelease": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pipeline": {
+                    "$ref": "#/definitions/model.Pipeline"
+                },
+                "pipeline_id": {
+                    "type": "integer"
+                },
+                "pipeline_run": {
+                    "$ref": "#/definitions/model.PipelineRun"
+                },
+                "pipeline_run_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "target_namespace": {
+                    "type": "string"
+                },
+                "target_service": {
+                    "type": "string"
+                },
+                "traffic_percent": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
                 }
             }
         },
@@ -4758,6 +4996,45 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Webhook": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "events": {
+                    "description": "逗号分隔的事件列表",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pipeline": {
+                    "$ref": "#/definitions/model.Pipeline"
+                },
+                "pipeline_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                }
+            }
+        },
         "model.YAMLSchema": {
             "type": "object",
             "properties": {
@@ -4893,6 +5170,39 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "request.CreateCanaryRelease": {
+            "type": "object",
+            "required": [
+                "name",
+                "pipeline_id",
+                "pipeline_run_id",
+                "target_namespace",
+                "target_service",
+                "traffic_percent"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "pipeline_id": {
+                    "type": "integer"
+                },
+                "pipeline_run_id": {
+                    "type": "integer"
+                },
+                "target_namespace": {
+                    "type": "string"
+                },
+                "target_service": {
+                    "type": "string"
+                },
+                "traffic_percent": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1
                 }
             }
         },
@@ -5131,6 +5441,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CreateWebhook": {
+            "type": "object",
+            "required": [
+                "events",
+                "name",
+                "pipeline_id",
+                "url"
+            ],
+            "properties": {
+                "events": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pipeline_id": {
+                    "type": "integer"
+                },
+                "secret": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 }
             }

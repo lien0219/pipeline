@@ -99,6 +99,8 @@ func InitDB() {
 		&model.ResourceQuota{},
 		&model.TenantResourceRequest{},
 		&model.ResourceReport{},
+		&model.Webhook{},
+		&model.CanaryRelease{},
 	)
 	if err != nil {
 		global.Log.Error("自动迁移失败", zap.Any("err", err))
