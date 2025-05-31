@@ -1,14 +1,17 @@
 package v1
 
 import (
+	"encoding/json"
 	"gin_pipeline/global"
 	"gin_pipeline/model"
 	"gin_pipeline/model/request"
 	"gin_pipeline/model/response"
 	"gin_pipeline/service"
+	"strconv"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"strconv"
 )
 
 var dagService = new(service.DAGService)
@@ -33,7 +36,7 @@ func CreateDAG(c *gin.Context) {
 	// 从上下文获取用户ID
 	userID := c.GetUint("userId")
 	if userID == 0 {
-		response.FailWithMessage("创建DAG失败", c)
+		response.FailWithMessage("创建DAG失败，未获取到用户ID", c)
 		return
 	}
 
@@ -49,8 +52,24 @@ func CreateDAG(c *gin.Context) {
 	}
 
 	if err := dagService.CreateDAG(&dag); err != nil {
-		global.Log.Error("创建DAG失败", zap.Error(err))
-		response.FailWithMessage("创建DAG失败: "+err.Error(), c)
+		if _, ok := err.(*json.SyntaxError); ok {
+			global.Log.Error("创建DAG时JSON解析错误", zap.Error(err))
+			response.FailWithMessage("创建DAG失败，请求数据格式错误", c)
+		} else if strings.Contains(err.Error(), "依赖节点不存在") {
+			// 提取缺失的节点 ID
+			startIndex := strings.Index(err.Error(), "依赖节点不存在: ")
+			if startIndex != -1 {
+				missingNodeID := err.Error()[startIndex+len("依赖节点不存在: "):]
+				global.Log.Error("创建DAG时依赖节点不存在",
+					zap.String("missingNodeID", missingNodeID),
+					zap.Any("requestNodes", req.Nodes),
+					zap.Error(err))
+			}
+			response.FailWithMessage("创建DAG失败，"+err.Error(), c)
+		} else {
+			global.Log.Error("创建DAG失败", zap.Error(err))
+			response.FailWithMessage("创建DAG失败: "+err.Error(), c)
+		}
 		return
 	}
 

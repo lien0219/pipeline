@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gin_pipeline/global"
 	"gin_pipeline/model"
+
 	"go.uber.org/zap"
 )
 
@@ -12,6 +13,31 @@ type DAGService struct{}
 
 // CreateDAG 创建新的DAG
 func (s *DAGService) CreateDAG(dag *model.DAG) error {
+	// 收集所有依赖节点 ID
+	dependencyIDs := make(map[string]bool)
+	for _, node := range dag.NodesData {
+		for _, depID := range node.Dependencies {
+			dependencyIDs[depID.(string)] = true
+		}
+	}
+
+	// 检查 nodesData 中是否包含所有依赖节点
+	for depID := range dependencyIDs {
+		found := false
+		for _, node := range dag.NodesData {
+			if node.ID == depID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			// 从数据库中查询缺失的节点
+			var dbNode model.DAGNode
+			if err := global.DB.Where("id = ?", depID).First(&dbNode).Error; err == nil {
+				dag.NodesData = append(dag.NodesData, dbNode)
+			}
+		}
+	}
 	// 验证DAG是否有效
 	if err := s.ValidateDAG(dag.NodesData); err != nil {
 		return err
@@ -128,6 +154,15 @@ func (s *DAGService) CreateDAGVersion(dagID uint, creatorID uint) (*model.DAG, e
 	return &newDag, nil
 }
 
+// getKeys 辅助函数，用于获取 map 的所有键
+func getKeys(m map[string]model.DAGNode) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // ValidateDAG 验证DAG是否有效（无环）
 func (s *DAGService) ValidateDAG(nodes []model.DAGNode) error {
 	if len(nodes) == 0 {
@@ -140,11 +175,14 @@ func (s *DAGService) ValidateDAG(nodes []model.DAGNode) error {
 		nodeMap[node.ID] = node
 	}
 
+	// 输出 nodeMap 中的节点 ID，用于调试
+	global.Log.Info("ValidateDAG 节点映射中的节点 ID", zap.Any("nodeIDs", getKeys(nodeMap)))
+
 	// 检查所有依赖是否存在
 	for _, node := range nodes {
 		for _, depID := range node.Dependencies {
-			if _, exists := nodeMap[depID]; !exists {
-				return errors.New("依赖节点不存在: " + depID)
+			if _, exists := nodeMap[depID.(string)]; !exists {
+				return errors.New("依赖节点不存在: " + depID.(string))
 			}
 		}
 	}
@@ -172,7 +210,7 @@ func (s *DAGService) ValidateDAG(nodes []model.DAGNode) error {
 		// 递归检查所有依赖节点
 		node := nodeMap[nodeID]
 		for _, depID := range node.Dependencies {
-			if dfs(depID) {
+			if dfs(depID.(string)) {
 				return true
 			}
 		}

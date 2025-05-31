@@ -4,18 +4,24 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // DAGNode 表示DAG中的节点
 type DAGNode struct {
-	ID           string   `json:"id" gorm:"primaryKey"`
-	Name         string   `json:"name"`
-	Type         string   `json:"type"` // task, condition, parallel, etc.
-	Config       JSONMap  `json:"config"`
-	Dependencies []string `json:"dependencies"` // 依赖的节点ID列表
-	Position     JSONMap  `json:"position"`     // 节点在UI中的位置
+	ID           string    `json:"id" gorm:"primaryKey"`
+	Name         string    `json:"name"`
+	Type         string    `json:"type"`                          // task, condition, parallel, etc.
+	Config       JSONMap   `json:"config" gorm:"type:json"`       // 手动指定数据库类型为 JSON
+	Dependencies JSONArray `json:"dependencies" gorm:"type:json"` // 修改为 JSON 类型
+	Position     JSONMap   `json:"position" gorm:"type:json"`     // 手动指定数据库类型为 JSON
+}
+
+// TableName 设置 DAGNode 的表名
+func (DAGNode) TableName() string {
+	return "dag_nodes"
 }
 
 // JSONMap 是一个可以存储在数据库中的JSON对象

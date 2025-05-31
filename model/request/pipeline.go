@@ -39,3 +39,13 @@ type UpdatePipeline struct {
 type TriggerPipeline struct {
 	GitBranch string `json:"git_branch"`
 }
+
+// GetDashboardStatsRequest 获取仪表盘统计数据请求参数
+type GetDashboardStatsRequest struct {
+	// 根据实际需求添加参数
+}
+
+// GetRecentActivitiesRequest 获取最近活动数据请求参数
+type GetRecentActivitiesRequest struct {
+	Limit int `json:"limit" binding:"required,min=1,max=100"` // 限制返回的活动数量
+}

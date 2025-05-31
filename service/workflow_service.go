@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 // WorkflowService 工作流服务
@@ -46,7 +47,11 @@ func (s *WorkflowService) TriggerWorkflow(pipelineID uint, userID uint, gitBranc
 	dagService := new(DAGService)
 	dag, err := dagService.GetActiveDAGByPipelineID(pipelineID)
 	if err != nil {
-		global.Log.Error("获取活动DAG失败", zap.Error(err))
+		if err == gorm.ErrRecordNotFound {
+			global.Log.Error("获取活动DAG失败，未找到符合条件的DAG记录", zap.Uint("pipelineID", pipelineID), zap.Error(err))
+		} else {
+			global.Log.Error("获取活动DAG失败", zap.Uint("pipelineID", pipelineID), zap.Error(err))
+		}
 		return nil, err
 	}
 
@@ -105,12 +110,21 @@ func (s *WorkflowService) executeWorkflow(dag *model.DAG, pipelineRun *model.Pip
 			config = node.Config
 		}
 
+		var depStrings []string
+		for _, dep := range node.Dependencies {
+			if depStr, ok := dep.(string); ok {
+				depStrings = append(depStrings, depStr)
+			} else {
+				global.Log.Error("依赖项不是 string 类型", zap.Any("dep", dep))
+			}
+		}
+
 		task := &WorkflowTask{
 			ID:           node.ID,
 			Name:         node.Name,
 			Type:         node.Type,
 			Config:       config,
-			Dependencies: node.Dependencies,
+			Dependencies: depStrings,
 			Status:       "pending",
 		}
 		tasks = append(tasks, task)

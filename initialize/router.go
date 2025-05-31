@@ -110,6 +110,7 @@ func InitRouter() *gin.Engine {
 	router.InitResourceReportRouter(apiGroup) // 资源报告路由
 	router.InitWebhookRouter(apiGroup)        // Webhook路由
 	router.InitCanaryRouter(apiGroup)         // 金丝雀路由
+	router.InitDashboardRouter(apiGroup)      // 仪表盘路由
 
 	global.Log.Info("路由注册成功")
 	return r

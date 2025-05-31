@@ -266,3 +266,12 @@ func InitCanaryRouter(Router *gin.RouterGroup) {
 		CanaryRouter.POST("/:id/deploy", v1.DeployCanaryRelease)
 	}
 }
+
+// InitDashboardRouter 初始化仪表盘路由
+func InitDashboardRouter(Router *gin.RouterGroup) {
+	DashboardRouter := Router.Group("/dashboard").Use(middleware.JWTAuth())
+	{
+		DashboardRouter.GET("/stats", v1.GetDashboardStats)
+		DashboardRouter.POST("/activities", v1.GetRecentActivities)
+	}
+}

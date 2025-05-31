@@ -6,10 +6,12 @@ import (
 	"gin_pipeline/model/request"
 	"gin_pipeline/model/response"
 	"gin_pipeline/service"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"time"
 )
 
 // CreatePipeline 创建流水线
@@ -114,6 +116,17 @@ func CreatePipeline(c *gin.Context) {
 		global.Log.Error("查询流水线失败", zap.Error(err))
 		response.FailWithMessage("创建流水线成功，但获取详情失败", c)
 		return
+	}
+
+	// 插入流水线创建活动记录
+	activity := model.PipelineActivity{
+		Type:      "primary",
+		Content:   "创建新的流水线: " + result.Name,
+		Timestamp: time.Now(),
+		Hollow:    false,
+	}
+	if err := global.DB.Create(&activity).Error; err != nil {
+		global.Log.Error("插入流水线创建活动记录失败", zap.Error(err))
 	}
 
 	response.OkWithData(result, c)
@@ -326,6 +339,21 @@ func executePipeline(runID uint) {
 		status = "failed"
 	}
 
+	// 插入流水线执行结果活动记录
+	activityType := "success"
+	if status == "failed" {
+		activityType = "warning"
+	}
+	activity := model.PipelineActivity{
+		Type:      activityType,
+		Content:   "流水线 " + pipelineRun.Pipeline.Name + " 执行 " + status,
+		Timestamp: time.Now(),
+		Hollow:    false,
+	}
+	if err := global.DB.Create(&activity).Error; err != nil {
+		global.Log.Error("插入流水线执行结果活动记录失败", zap.Error(err))
+	}
+
 	// 更新运行结果
 	now := time.Now()
 	duration := int(now.Sub(*pipelineRun.StartTime).Seconds())
@@ -468,7 +496,14 @@ func GetPipelineRunLogs(c *gin.Context) {
 // @Success 200 {object} response.Response{data=model.PipelineRun} "触发成功"
 // @Router /pipeline/{id}/trigger [post]
 func TriggerPipeline(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		global.Log.Error("将流水线ID转换为整数失败", zap.String("pipelineID", idStr), zap.Error(err))
+		response.FailWithMessage("触发流水线失败，无效的流水线ID", c)
+		return
+	}
+
 	var req request.TriggerPipeline
 	if err := c.ShouldBindJSON(&req); err != nil {
 		// 忽略绑定错误，使用默认值
@@ -484,8 +519,13 @@ func TriggerPipeline(c *gin.Context) {
 	// 查询流水线
 	var pipeline model.Pipeline
 	if err := global.DB.First(&pipeline, id).Error; err != nil {
-		global.Log.Error("查询流水线失败", zap.Error(err))
-		response.FailWithMessage("触发流水线失败", c)
+		if err == gorm.ErrRecordNotFound {
+			global.Log.Error("触发流水线失败，未找到指定ID的流水线", zap.Int("pipelineID", id), zap.Error(err))
+			response.FailWithMessage("触发流水线失败，未找到指定ID的流水线", c)
+		} else {
+			global.Log.Error("查询流水线失败", zap.Int("pipelineID", id), zap.Error(err))
+			response.FailWithMessage("触发流水线失败", c)
+		}
 		return
 	}
 
@@ -513,8 +553,6 @@ func TriggerPipeline(c *gin.Context) {
 
 	response.OkWithData(pipelineRun, c)
 }
-
-// 修改CancelPipelineRun函数，使用工作流服务
 
 // CancelPipelineRun 取消流水线运行
 // @Summary 取消流水线运行
@@ -554,4 +592,51 @@ func CancelPipelineRun(c *gin.Context) {
 	}
 
 	response.OkWithMessage("取消流水线运行成功", c)
+}
+
+// GetDashboardStats 获取仪表盘统计数据
+// @Summary 获取仪表盘统计数据
+// @Description 获取流水线的统计数据，如成功、运行中、失败和等待中的数量
+// @Tags 仪表盘
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} response.Response{data=model.PipelineStats} "获取成功"
+// @Router /dashboard/stats [get]
+func GetDashboardStats(c *gin.Context) {
+	var stats model.PipelineStats
+
+	// 统计成功的流水线数量
+	global.DB.Model(&model.PipelineRun{}).Where("status = ?", "success").Count(&stats.Success)
+	// 统计运行中的流水线数量
+	global.DB.Model(&model.PipelineRun{}).Where("status = ?", "running").Count(&stats.Running)
+	// 统计失败的流水线数量
+	global.DB.Model(&model.PipelineRun{}).Where("status = ?", "failed").Count(&stats.Failed)
+	// 统计等待中的流水线数量
+	global.DB.Model(&model.PipelineRun{}).Where("status = ?", "pending").Count(&stats.Pending)
+
+	response.OkWithData(stats, c)
+}
+
+// GetRecentActivities 获取最近活动数据
+// @Summary 获取最近活动数据
+// @Description 获取最近的流水线活动记录
+// @Tags 仪表盘
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param data body request.GetRecentActivitiesRequest true "请求参数"
+// @Success 200 {object} response.Response{data=[]model.PipelineActivity} "获取成功"
+// @Router /dashboard/activities [post]
+func GetRecentActivities(c *gin.Context) {
+	var req request.GetRecentActivitiesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithMessage("参数错误: "+err.Error(), c)
+		return
+	}
+
+	var activities []model.PipelineActivity
+	global.DB.Order("timestamp DESC").Limit(req.Limit).Find(&activities)
+
+	response.OkWithData(activities, c)
 }

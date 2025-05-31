@@ -129,11 +129,12 @@ definitions:
   model.DAGNode:
     properties:
       config:
-        $ref: '#/definitions/model.JSONMap'
+        allOf:
+        - $ref: '#/definitions/model.JSONMap'
+        description: 手动指定数据库类型为 JSON
       dependencies:
-        description: 依赖的节点ID列表
-        items:
-          type: string
+        description: 修改为 JSON 类型
+        items: {}
         type: array
       id:
         type: string
@@ -142,7 +143,7 @@ definitions:
       position:
         allOf:
         - $ref: '#/definitions/model.JSONMap'
-        description: 节点在UI中的位置
+        description: 手动指定数据库类型为 JSON
       type:
         description: task, condition, parallel, etc.
         type: string
@@ -235,6 +236,19 @@ definitions:
       updated_at:
         type: string
     type: object
+  model.PipelineActivity:
+    properties:
+      content:
+        type: string
+      hollow:
+        type: boolean
+      id:
+        type: integer
+      timestamp:
+        type: string
+      type:
+        type: string
+    type: object
   model.PipelineRun:
     properties:
       created_at:
@@ -267,6 +281,17 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/model.User'
+    type: object
+  model.PipelineStats:
+    properties:
+      failed:
+        type: integer
+      pending:
+        type: integer
+      running:
+        type: integer
+      success:
+        type: integer
     type: object
   model.Release:
     properties:
@@ -862,6 +887,16 @@ definitions:
         type: string
     required:
     - key
+    type: object
+  request.GetRecentActivitiesRequest:
+    properties:
+      limit:
+        description: 限制返回的活动数量
+        maximum: 100
+        minimum: 1
+        type: integer
+    required:
+    - limit
     type: object
   request.Job:
     properties:
@@ -1852,6 +1887,59 @@ paths:
       summary: 验证DAG
       tags:
       - DAG管理
+  /dashboard/activities:
+    post:
+      consumes:
+      - application/json
+      description: 获取最近的流水线活动记录
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetRecentActivitiesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.PipelineActivity'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取最近活动数据
+      tags:
+      - 仪表盘
+  /dashboard/stats:
+    get:
+      consumes:
+      - application/json
+      description: 获取流水线的统计数据，如成功、运行中、失败和等待中的数量
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PipelineStats'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取仪表盘统计数据
+      tags:
+      - 仪表盘
   /environment:
     get:
       consumes:

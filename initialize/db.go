@@ -89,6 +89,7 @@ func InitDB() {
 		&model.Release{},
 		&model.BuildTemplate{},
 		&model.DAG{},
+		&model.DAGNode{},
 		&model.YAMLValidation{},
 		&model.YAMLSchema{},
 		&model.TemplateCategory{},
@@ -101,6 +102,9 @@ func InitDB() {
 		&model.ResourceReport{},
 		&model.Webhook{},
 		&model.CanaryRelease{},
+		&model.PipelineStats{},
+		&model.PipelineActivity{},
+		&model.AuditLog{},
 	)
 	if err != nil {
 		global.Log.Error("自动迁移失败", zap.Any("err", err))
