@@ -8,10 +8,6 @@ export const usePipelineStore = defineStore("pipeline", () => {
   const loading = ref(false);
   const error = ref(null);
 
-  async function getPipelineRuns(id: string, params: any) {
-    const response = await getPipelineRuns(id, params);
-    return response.data;
-  }
   async function fetchPipelines(params = {}) {
     loading.value = true;
     error.value = null;
@@ -100,6 +96,25 @@ export const usePipelineStore = defineStore("pipeline", () => {
     }
   }
 
+  async function getDashboardStats() {
+    try {
+      const response = await pipelineApi.getDashboardStats();
+      return response.data;
+    } catch (err) {
+      error.value = err.message || "Failed to get dashboard stats";
+      throw err;
+    }
+  }
+
+  async function getDashboardActivities(limit) {
+    try {
+      const response = await pipelineApi.getDashboardActivities(limit);
+      return response.data;
+    } catch (err) {
+      error.value = err.message || "Failed to get dashboard activities";
+      throw err;
+    }
+  }
   async function triggerPipeline(id) {
     loading.value = true;
     error.value = null;
@@ -114,7 +129,6 @@ export const usePipelineStore = defineStore("pipeline", () => {
       loading.value = false;
     }
   }
-
   return {
     pipelines,
     currentPipeline,
@@ -125,7 +139,8 @@ export const usePipelineStore = defineStore("pipeline", () => {
     createPipeline,
     updatePipeline,
     deletePipeline,
+    getDashboardStats,
+    getDashboardActivities,
     triggerPipeline,
-    getPipelineRuns,
   };
 });

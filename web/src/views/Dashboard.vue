@@ -147,7 +147,7 @@
                 :timestamp="formatDate(activity.timestamp)"
                 :hollow="activity.hollow"
               >
-                {{ activity.content }}
+                {{ activity.Content }}
               </el-timeline-item>
             </el-timeline>
           </div>
@@ -251,46 +251,19 @@ const fetchData = async () => {
     recentPipelines.value = response.data.list || [];
 
     // 统计数据
+    const statsResponse = await pipelineStore.getDashboardStats();
     stats.value = {
-      success: 12,
-      running: 3,
-      failed: 2,
-      pending: 5,
+      success: statsResponse?.Success,
+      running: statsResponse?.Running,
+      failed: statsResponse?.Failed,
+      pending: statsResponse?.Pending,
     };
 
     // 模拟活动数据
-    activities.value = [
-      {
-        type: "success",
-        content: '流水线 "Frontend Deploy" 构建成功',
-        timestamp: new Date(),
-        hollow: false,
-      },
-      {
-        type: "warning",
-        content: '流水线 "Backend API" 构建失败',
-        timestamp: new Date(Date.now() - 3600000),
-        hollow: false,
-      },
-      {
-        type: "primary",
-        content: '用户 admin 创建了新的流水线 "Database Migration"',
-        timestamp: new Date(Date.now() - 7200000),
-        hollow: false,
-      },
-      {
-        type: "info",
-        content: "系统更新完成",
-        timestamp: new Date(Date.now() - 86400000),
-        hollow: true,
-      },
-      {
-        type: "success",
-        content: '流水线 "Mobile App" 部署成功',
-        timestamp: new Date(Date.now() - 172800000),
-        hollow: true,
-      },
-    ];
+    const activitiesResponse = await pipelineStore.getDashboardActivities({
+      limit: 10,
+    });
+    activities.value = activitiesResponse;
 
     initChart();
   } catch (error) {

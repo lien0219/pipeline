@@ -52,17 +52,10 @@ export const pipelineApi = {
   deleteArtifact(id) {
     return http.delete(`/v1/artifacts/${id}`);
   },
-};
-export const triggerPipeline = (id: string) => {
-  return http.post(`/v1/pipeline/${id}/trigger`);
-};
-
-export const getPipelineRuns = (
-  id: string,
-  params: {
-    page?: number;
-    limit?: number;
-  }
-) => {
-  return http.get(`/v1/pipeline/${id}/runs`, { params });
+  getDashboardStats() {
+    return http.get("/v1/dashboard/stats");
+  },
+  getDashboardActivities(data) {
+    return http.post("/v1/dashboard/activities", data);
+  },
 };
