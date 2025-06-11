@@ -26,7 +26,8 @@ func InitRouter() *gin.Engine {
 	r := gin.New()
 
 	r.MaxMultipartMemory = 8 << 20
-	// 使用中间件
+	// 使用中间件（顺序：速率限制 → 日志 → 恢复 → 安全头 → 审计日志 → 其他）
+	r.Use(middleware.RateLimitMiddleware())
 	r.Use(middleware.GinLogger())
 	r.Use(middleware.GinRecovery(true))
 	r.Use(middleware.SecurityHeaders())

@@ -5,8 +5,32 @@ import (
 	"gin_pipeline/model"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
+)
+
+// RateLimit 速率限制配置
+const (
+	MaxRequestsPerMinute = 100         // 每分钟最大请求数
+	WindowDuration       = time.Minute // 时间窗口（1分钟）
+)
+
+// ipRequest 记录单个IP的请求计数和窗口开始时间
+type ipRequest struct {
+	count       int
+	windowStart time.Time
+}
+
+// rateLimiter 速率限制器（并发安全）
+var (
+	rateLimiter = struct {
+		sync.RWMutex
+		ips map[string]*ipRequest
+	}{
+		ips: make(map[string]*ipRequest),
+	}
 )
 
 func SecurityHeaders() gin.HandlerFunc {
@@ -39,4 +63,55 @@ func AuditLogMiddleware() gin.HandlerFunc {
 		}
 		c.Next()
 	}
+}
+
+// RateLimitMiddleware 速率限制中间件（限制同一IP每分钟最多100次请求）
+func RateLimitMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ip := getClientIP(c.Request)
+
+		rateLimiter.Lock()
+		defer rateLimiter.Unlock()
+
+		now := time.Now()
+		ir, exists := rateLimiter.ips[ip]
+
+		// 新IP或时间窗口已过期，重置计数
+		if !exists || now.Sub(ir.windowStart) > WindowDuration {
+			rateLimiter.ips[ip] = &ipRequest{
+				count:       1,
+				windowStart: now,
+			}
+		} else {
+			ir.count++
+			if ir.count > MaxRequestsPerMinute {
+				c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
+					"code":    http.StatusTooManyRequests,
+					"message": "请求过于频繁，请1分钟后再试",
+				})
+				return
+			}
+		}
+
+		c.Next()
+	}
+}
+
+// 辅助函数getClientIP 获取客户端真实IP（考虑反向代理场景）
+func getClientIP(r *http.Request) string {
+	ip := r.Header.Get("X-Forwarded-For")
+	if ip != "" {
+		return ip
+	}
+	ip = r.Header.Get("X-Real-IP")
+	if ip != "" {
+		return ip
+	}
+	// 从RemoteAddr解析IP（格式为IP:端口）
+	addr := r.RemoteAddr
+	idx := strings.LastIndex(addr, ":")
+	if idx > 0 {
+		return addr[:idx]
+	}
+	return addr
 }
