@@ -33,7 +33,7 @@ const routes = [
         meta: { requiresAuth: true, title: "流水线详情" },
       },
       {
-        path: "pipelines/create",
+        path: "pipeline/create",
         name: "PipelineCreate",
         component: () => import("@/views/pipeline/PipelineCreate.vue"),
         meta: { requiresAuth: true, title: "创建流水线" },
@@ -48,7 +48,7 @@ const routes = [
         path: "pipelines/:id/designer",
         name: "PipelineDesigner",
         component: () => import("@/views/pipeline/PipelineDesigner.vue"),
-        meta: { requiresAuth: true, title: "流水线设计器" }
+        meta: { requiresAuth: true, title: "流水线设计器" },
       },
       {
         path: "builds/history",
@@ -113,8 +113,7 @@ router.beforeEach((to, from, next) => {
   );
 
   if (requiresAuth && !authStore.isAuthenticated) {
-    // next("/login");
-    next()
+    next("/login");
   } else {
     next();
   }

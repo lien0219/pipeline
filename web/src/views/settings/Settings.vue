@@ -3,7 +3,6 @@
     <div class="page-header">
       <div class="header-title">
         <h2>系统设置</h2>
-        <p>配置系统参数和全局设置</p>
       </div>
     </div>
 
@@ -11,33 +10,40 @@
       <el-tabs v-model="activeTab">
         <el-tab-pane label="基本设置" name="basic">
           <el-form
-              ref="basicForm"
-              :model="basicSettings"
-              label-position="top"
-              :disabled="!isEditing"
+            ref="basicForm"
+            :model="basicSettings"
+            label-position="top"
+            :disabled="!isEditing"
           >
             <h3>系统信息</h3>
 
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="系统名称">
-                  <el-input v-model="basicSettings.system_name" placeholder="系统名称" />
+                  <el-input
+                    v-model="basicSettings.system_name"
+                    placeholder="系统名称"
+                  />
                 </el-form-item>
               </el-col>
 
               <el-col :span="12">
                 <el-form-item label="系统版本">
-                  <el-input v-model="basicSettings.version" placeholder="系统版本" disabled />
+                  <el-input
+                    v-model="basicSettings.version"
+                    placeholder="系统版本"
+                    disabled
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
 
             <el-form-item label="系统描述">
               <el-input
-                  v-model="basicSettings.description"
-                  type="textarea"
-                  :rows="3"
-                  placeholder="系统描述"
+                v-model="basicSettings.description"
+                type="textarea"
+                :rows="3"
+                placeholder="系统描述"
               />
             </el-form-item>
 
@@ -46,13 +52,19 @@
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="管理员邮箱">
-                  <el-input v-model="basicSettings.admin_email" placeholder="管理员邮箱" />
+                  <el-input
+                    v-model="basicSettings.admin_email"
+                    placeholder="管理员邮箱"
+                  />
                 </el-form-item>
               </el-col>
 
               <el-col :span="12">
                 <el-form-item label="管理员电话">
-                  <el-input v-model="basicSettings.admin_phone" placeholder="管理员电话" />
+                  <el-input
+                    v-model="basicSettings.admin_phone"
+                    placeholder="管理员电话"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -66,7 +78,11 @@
 
             <div class="form-actions" v-else>
               <el-button @click="cancelEditing">取消</el-button>
-              <el-button type="primary" @click="saveBasicSettings" :loading="saving">
+              <el-button
+                type="primary"
+                @click="saveBasicSettings"
+                :loading="saving"
+              >
                 保存设置
               </el-button>
             </div>
@@ -75,23 +91,29 @@
 
         <el-tab-pane label="邮件设置" name="email">
           <el-form
-              ref="emailForm"
-              :model="emailSettings"
-              label-position="top"
-              :disabled="!isEditingEmail"
+            ref="emailForm"
+            :model="emailSettings"
+            label-position="top"
+            :disabled="!isEditingEmail"
           >
             <h3>SMTP 配置</h3>
 
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="SMTP 服务器">
-                  <el-input v-model="emailSettings.smtp_server" placeholder="SMTP 服务器地址" />
+                  <el-input
+                    v-model="emailSettings.smtp_server"
+                    placeholder="SMTP 服务器地址"
+                  />
                 </el-form-item>
               </el-col>
 
               <el-col :span="12">
                 <el-form-item label="SMTP 端口">
-                  <el-input v-model="emailSettings.smtp_port" placeholder="SMTP 端口" />
+                  <el-input
+                    v-model="emailSettings.smtp_port"
+                    placeholder="SMTP 端口"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -99,24 +121,30 @@
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="SMTP 用户名">
-                  <el-input v-model="emailSettings.smtp_username" placeholder="SMTP 用户名" />
+                  <el-input
+                    v-model="emailSettings.smtp_username"
+                    placeholder="SMTP 用户名"
+                  />
                 </el-form-item>
               </el-col>
 
               <el-col :span="12">
                 <el-form-item label="SMTP 密码">
                   <el-input
-                      v-model="emailSettings.smtp_password"
-                      type="password"
-                      placeholder="SMTP 密码"
-                      show-password
+                    v-model="emailSettings.smtp_password"
+                    type="password"
+                    placeholder="SMTP 密码"
+                    show-password
                   />
                 </el-form-item>
               </el-col>
             </el-row>
 
             <el-form-item label="发件人邮箱">
-              <el-input v-model="emailSettings.from_email" placeholder="发件人邮箱" />
+              <el-input
+                v-model="emailSettings.from_email"
+                placeholder="发件人邮箱"
+              />
             </el-form-item>
 
             <el-form-item label="启用 SSL/TLS">
@@ -152,7 +180,11 @@
 
             <div class="form-actions" v-else>
               <el-button @click="cancelEditingEmail">取消</el-button>
-              <el-button type="primary" @click="saveEmailSettings" :loading="savingEmail">
+              <el-button
+                type="primary"
+                @click="saveEmailSettings"
+                :loading="savingEmail"
+              >
                 保存设置
               </el-button>
             </div>
@@ -161,9 +193,9 @@
 
         <el-tab-pane label="集成设置" name="integrations">
           <el-form
-              ref="integrationsForm"
-              :model="integrationSettings"
-              label-position="top"
+            ref="integrationsForm"
+            :model="integrationSettings"
+            label-position="top"
           >
             <h3>Git 集成</h3>
 
@@ -175,24 +207,34 @@
 
                 <template v-if="integrationSettings.github.enabled">
                   <el-form-item label="GitHub App ID">
-                    <el-input v-model="integrationSettings.github.app_id" placeholder="GitHub App ID" />
+                    <el-input
+                      v-model="integrationSettings.github.app_id"
+                      placeholder="GitHub App ID"
+                    />
                   </el-form-item>
 
                   <el-form-item label="GitHub App 私钥">
                     <el-input
-                        v-model="integrationSettings.github.private_key"
-                        type="textarea"
-                        :rows="3"
-                        placeholder="GitHub App 私钥"
+                      v-model="integrationSettings.github.private_key"
+                      type="textarea"
+                      :rows="3"
+                      placeholder="GitHub App 私钥"
                     />
                   </el-form-item>
 
                   <el-form-item label="Webhook 密钥">
-                    <el-input v-model="integrationSettings.github.webhook_secret" placeholder="Webhook 密钥" />
+                    <el-input
+                      v-model="integrationSettings.github.webhook_secret"
+                      placeholder="Webhook 密钥"
+                    />
                   </el-form-item>
 
                   <el-form-item>
-                    <el-button type="primary" @click="saveGitHubSettings" :loading="savingGitHub">
+                    <el-button
+                      type="primary"
+                      @click="saveGitHubSettings"
+                      :loading="savingGitHub"
+                    >
                       保存 GitHub 设置
                     </el-button>
                     <el-button type="success" @click="testGitHubSettings">
@@ -209,19 +251,33 @@
 
                 <template v-if="integrationSettings.gitlab.enabled">
                   <el-form-item label="GitLab URL">
-                    <el-input v-model="integrationSettings.gitlab.url" placeholder="GitLab URL" />
+                    <el-input
+                      v-model="integrationSettings.gitlab.url"
+                      placeholder="GitLab URL"
+                    />
                   </el-form-item>
 
                   <el-form-item label="GitLab API Token">
-                    <el-input v-model="integrationSettings.gitlab.token" placeholder="GitLab API Token" show-password />
+                    <el-input
+                      v-model="integrationSettings.gitlab.token"
+                      placeholder="GitLab API Token"
+                      show-password
+                    />
                   </el-form-item>
 
                   <el-form-item label="Webhook 密钥">
-                    <el-input v-model="integrationSettings.gitlab.webhook_secret" placeholder="Webhook 密钥" />
+                    <el-input
+                      v-model="integrationSettings.gitlab.webhook_secret"
+                      placeholder="Webhook 密钥"
+                    />
                   </el-form-item>
 
                   <el-form-item>
-                    <el-button type="primary" @click="saveGitLabSettings" :loading="savingGitLab">
+                    <el-button
+                      type="primary"
+                      @click="saveGitLabSettings"
+                      :loading="savingGitLab"
+                    >
                       保存 GitLab 设置
                     </el-button>
                     <el-button type="success" @click="testGitLabSettings">
@@ -242,19 +298,34 @@
 
                 <template v-if="integrationSettings.docker.enabled">
                   <el-form-item label="Registry URL">
-                    <el-input v-model="integrationSettings.docker.url" placeholder="Registry URL" />
+                    <el-input
+                      v-model="integrationSettings.docker.url"
+                      placeholder="Registry URL"
+                    />
                   </el-form-item>
 
                   <el-form-item label="用户名">
-                    <el-input v-model="integrationSettings.docker.username" placeholder="用户名" />
+                    <el-input
+                      v-model="integrationSettings.docker.username"
+                      placeholder="用户名"
+                    />
                   </el-form-item>
 
                   <el-form-item label="密码">
-                    <el-input v-model="integrationSettings.docker.password" type="password" placeholder="密码" show-password />
+                    <el-input
+                      v-model="integrationSettings.docker.password"
+                      type="password"
+                      placeholder="密码"
+                      show-password
+                    />
                   </el-form-item>
 
                   <el-form-item>
-                    <el-button type="primary" @click="saveDockerSettings" :loading="savingDocker">
+                    <el-button
+                      type="primary"
+                      @click="saveDockerSettings"
+                      :loading="savingDocker"
+                    >
                       保存 Docker Registry 设置
                     </el-button>
                     <el-button type="success" @click="testDockerSettings">
@@ -272,12 +343,24 @@
             <h3>系统状态</h3>
 
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="系统运行时间">{{ systemStatus.uptime }}</el-descriptions-item>
-              <el-descriptions-item label="CPU 使用率">{{ systemStatus.cpu_usage }}</el-descriptions-item>
-              <el-descriptions-item label="内存使用率">{{ systemStatus.memory_usage }}</el-descriptions-item>
-              <el-descriptions-item label="磁盘使用率">{{ systemStatus.disk_usage }}</el-descriptions-item>
-              <el-descriptions-item label="数据库连接数">{{ systemStatus.db_connections }}</el-descriptions-item>
-              <el-descriptions-item label="活跃用户数">{{ systemStatus.active_users }}</el-descriptions-item>
+              <el-descriptions-item label="系统运行时间">{{
+                systemStatus.uptime
+              }}</el-descriptions-item>
+              <el-descriptions-item label="CPU 使用率">{{
+                systemStatus.cpu_usage
+              }}</el-descriptions-item>
+              <el-descriptions-item label="内存使用率">{{
+                systemStatus.memory_usage
+              }}</el-descriptions-item>
+              <el-descriptions-item label="磁盘使用率">{{
+                systemStatus.disk_usage
+              }}</el-descriptions-item>
+              <el-descriptions-item label="数据库连接数">{{
+                systemStatus.db_connections
+              }}</el-descriptions-item>
+              <el-descriptions-item label="活跃用户数">{{
+                systemStatus.active_users
+              }}</el-descriptions-item>
             </el-descriptions>
 
             <div class="action-buttons">
@@ -292,22 +375,30 @@
             <h3>数据库维护</h3>
 
             <div class="action-buttons">
-              <el-button type="primary" @click="backupDatabase" :loading="backingUp">
+              <el-button
+                type="primary"
+                @click="backupDatabase"
+                :loading="backingUp"
+              >
                 <el-icon><Download /></el-icon>
                 备份数据库
               </el-button>
 
-              <el-button type="warning" @click="optimizeDatabase" :loading="optimizing">
-                <el-icon><Magic /></el-icon>
+              <el-button
+                type="warning"
+                @click="optimizeDatabase"
+                :loading="optimizing"
+              >
+                <el-icon><Edit /></el-icon>
                 优化数据库
               </el-button>
 
               <el-upload
-                  class="upload-button"
-                  action="#"
-                  :auto-upload="false"
-                  :on-change="handleDatabaseFileChange"
-                  :limit="1"
+                class="upload-button"
+                action="#"
+                :auto-upload="false"
+                :on-change="handleDatabaseFileChange"
+                :limit="1"
               >
                 <el-button type="danger">
                   <el-icon><Upload /></el-icon>
@@ -331,28 +422,28 @@
               <el-table-column label="操作" width="200" fixed="right">
                 <template #default="{ row }">
                   <el-button
-                      link
-                      type="primary"
-                      size="small"
-                      @click="downloadLog(row.name)"
+                    link
+                    type="primary"
+                    size="small"
+                    @click="downloadLog(row.name)"
                   >
                     下载
                   </el-button>
 
                   <el-button
-                      link
-                      type="primary"
-                      size="small"
-                      @click="viewLog(row.name)"
+                    link
+                    type="primary"
+                    size="small"
+                    @click="viewLog(row.name)"
                   >
                     查看
                   </el-button>
 
                   <el-button
-                      link
-                      type="danger"
-                      size="small"
-                      @click="deleteLog(row.name)"
+                    link
+                    type="danger"
+                    size="small"
+                    @click="deleteLog(row.name)"
                   >
                     删除
                   </el-button>
@@ -375,12 +466,10 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
-
-    &lt;!-- 查看日志对话框 -->
     <el-dialog
-        v-model="logDialogVisible"
-        :title="`查看日志: ${currentLog}`"
-        width="80%"
+      v-model="logDialogVisible"
+      :title="`查看日志: ${currentLog}`"
+      width="80%"
     >
       <div v-loading="loadingLogContent">
         <div class="log-container">
@@ -392,11 +481,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { Edit, Message, Refresh, Download, Upload, Magic, Delete } from '@element-plus/icons-vue';
+import { ref, reactive, onMounted } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import {
+  Edit,
+  Message,
+  Refresh,
+  Download,
+  Upload,
+  Delete,
+} from "@element-plus/icons-vue";
 
-const activeTab = ref('basic');
+const activeTab = ref("basic");
 const isEditing = ref(false);
 const isEditingEmail = ref(false);
 const saving = ref(false);
@@ -409,69 +505,73 @@ const optimizing = ref(false);
 const loadingLogs = ref(false);
 const logDialogVisible = ref(false);
 const loadingLogContent = ref(false);
-const currentLog = ref('');
-const logContent = ref('');
+const currentLog = ref("");
+const logContent = ref("");
 
 // 基本设置
 const basicSettings = reactive({
-  system_name: 'CI/CD 流水线平台',
-  version: 'v1.0.0',
-  description: '一个强大的持续集成和持续部署平台，支持多种构建和部署场景。',
-  admin_email: 'admin@example.com',
-  admin_phone: '13800138000'
+  system_name: "CI/CD 流水线平台",
+  version: "v1.0.0",
+  description: "一个强大的持续集成和持续部署平台，支持多种构建和部署场景。",
+  admin_email: "admin@example.com",
+  admin_phone: "13800138000",
 });
 
 // 邮件设置
 const emailSettings = reactive({
-  smtp_server: 'smtp.example.com',
-  smtp_port: '587',
-  smtp_username: 'notification@example.com',
-  smtp_password: 'password123',
-  from_email: 'notification@example.com',
+  smtp_server: "smtp.example.com",
+  smtp_port: "587",
+  smtp_username: "notification@example.com",
+  smtp_password: "password123",
+  from_email: "notification@example.com",
   use_ssl: true,
   enable_notifications: true,
-  notification_events: ['pipeline_failure', 'deployment_failure', 'system_error']
+  notification_events: [
+    "pipeline_failure",
+    "deployment_failure",
+    "system_error",
+  ],
 });
 
 // 集成设置
 const integrationSettings = reactive({
   github: {
     enabled: false,
-    app_id: '',
-    private_key: '',
-    webhook_secret: ''
+    app_id: "",
+    private_key: "",
+    webhook_secret: "",
   },
   gitlab: {
     enabled: true,
-    url: 'https://gitlab.example.com',
-    token: 'glpat-XXXXXXXXXXXXXXXXXXXX',
-    webhook_secret: 'webhook-secret-123'
+    url: "https://gitlab.example.com",
+    token: "glpat-XXXXXXXXXXXXXXXXXXXX",
+    webhook_secret: "webhook-secret-123",
   },
   docker: {
     enabled: true,
-    url: 'https://registry.example.com',
-    username: 'registry-user',
-    password: 'registry-password'
-  }
+    url: "https://registry.example.com",
+    username: "registry-user",
+    password: "registry-password",
+  },
 });
 
 // 系统状态
 const systemStatus = reactive({
-  uptime: '10天 5小时 30分钟',
-  cpu_usage: '25%',
-  memory_usage: '40%',
-  disk_usage: '60%',
-  db_connections: '15',
-  active_users: '8'
+  uptime: "10天 5小时 30分钟",
+  cpu_usage: "25%",
+  memory_usage: "40%",
+  disk_usage: "60%",
+  db_connections: "15",
+  active_users: "8",
 });
 
 // 日志列表
 const logs = ref([
-  { name: 'system.log', size: 1048576, modified: '2023-05-18 10:30:00' },
-  { name: 'access.log', size: 5242880, modified: '2023-05-18 10:30:00' },
-  { name: 'error.log', size: 524288, modified: '2023-05-18 10:30:00' },
-  { name: 'pipeline.log', size: 2097152, modified: '2023-05-18 10:30:00' },
-  { name: 'deployment.log', size: 1572864, modified: '2023-05-18 10:30:00' }
+  { name: "system.log", size: 1048576, modified: "2023-05-18 10:30:00" },
+  { name: "access.log", size: 5242880, modified: "2023-05-18 10:30:00" },
+  { name: "error.log", size: 524288, modified: "2023-05-18 10:30:00" },
+  { name: "pipeline.log", size: 2097152, modified: "2023-05-18 10:30:00" },
+  { name: "deployment.log", size: 1572864, modified: "2023-05-18 10:30:00" },
 ]);
 
 // 开始编辑基本设置
@@ -491,12 +591,12 @@ const saveBasicSettings = async () => {
 
   try {
     // 实际项目中应该调用API保存设置
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    ElMessage.success('基本设置已保存');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    ElMessage.success("基本设置已保存");
     isEditing.value = false;
   } catch (error) {
-    console.error('保存基本设置失败:', error);
-    ElMessage.error('保存基本设置失败');
+    console.error("保存基本设置失败:", error);
+    ElMessage.error("保存基本设置失败");
   } finally {
     saving.value = false;
   }
@@ -519,12 +619,12 @@ const saveEmailSettings = async () => {
 
   try {
     // 实际项目中应该调用API保存设置
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    ElMessage.success('邮件设置已保存');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    ElMessage.success("邮件设置已保存");
     isEditingEmail.value = false;
   } catch (error) {
-    console.error('保存邮件设置失败:', error);
-    ElMessage.error('保存邮件设置失败');
+    console.error("保存邮件设置失败:", error);
+    ElMessage.error("保存邮件设置失败");
   } finally {
     savingEmail.value = false;
   }
@@ -534,11 +634,11 @@ const saveEmailSettings = async () => {
 const testEmailSettings = async () => {
   try {
     // 实际项目中应该调用API测试邮件设置
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    ElMessage.success('测试邮件已发送');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    ElMessage.success("测试邮件已发送");
   } catch (error) {
-    console.error('测试邮件发送失败:', error);
-    ElMessage.error('测试邮件发送失败');
+    console.error("测试邮件发送失败:", error);
+    ElMessage.error("测试邮件发送失败");
   }
 };
 
@@ -548,11 +648,11 @@ const saveGitHubSettings = async () => {
 
   try {
     // 实际项目中应该调用API保存设置
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    ElMessage.success('GitHub 设置已保存');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    ElMessage.success("GitHub 设置已保存");
   } catch (error) {
-    console.error('保存 GitHub 设置失败:', error);
-    ElMessage.error('保存 GitHub 设置失败');
+    console.error("保存 GitHub 设置失败:", error);
+    ElMessage.error("保存 GitHub 设置失败");
   } finally {
     savingGitHub.value = false;
   }
@@ -562,11 +662,11 @@ const saveGitHubSettings = async () => {
 const testGitHubSettings = async () => {
   try {
     // 实际项目中应该调用API测试 GitHub 设置
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    ElMessage.success('GitHub 连接测试成功');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    ElMessage.success("GitHub 连接测试成功");
   } catch (error) {
-    console.error('GitHub 连接测试失败:', error);
-    ElMessage.error('GitHub 连接测试失败');
+    console.error("GitHub 连接测试失败:", error);
+    ElMessage.error("GitHub 连接测试失败");
   }
 };
 
@@ -576,11 +676,11 @@ const saveGitLabSettings = async () => {
 
   try {
     // 实际项目中应该调用API保存设置
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    ElMessage.success('GitLab 设置已保存');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    ElMessage.success("GitLab 设置已保存");
   } catch (error) {
-    console.error('保存 GitLab 设置失败:', error);
-    ElMessage.error('保存 GitLab 设置失败');
+    console.error("保存 GitLab 设置失败:", error);
+    ElMessage.error("保存 GitLab 设置失败");
   } finally {
     savingGitLab.value = false;
   }
@@ -590,11 +690,11 @@ const saveGitLabSettings = async () => {
 const testGitLabSettings = async () => {
   try {
     // 实际项目中应该调用API测试 GitLab 设置
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    ElMessage.success('GitLab 连接测试成功');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    ElMessage.success("GitLab 连接测试成功");
   } catch (error) {
-    console.error('GitLab 连接测试失败:', error);
-    ElMessage.error('GitLab 连接测试失败');
+    console.error("GitLab 连接测试失败:", error);
+    ElMessage.error("GitLab 连接测试失败");
   }
 };
 
@@ -604,11 +704,11 @@ const saveDockerSettings = async () => {
 
   try {
     // 实际项目中应该调用API保存设置
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    ElMessage.success('Docker Registry 设置已保存');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    ElMessage.success("Docker Registry 设置已保存");
   } catch (error) {
-    console.error('保存 Docker Registry 设置失败:', error);
-    ElMessage.error('保存 Docker Registry 设置失败');
+    console.error("保存 Docker Registry 设置失败:", error);
+    ElMessage.error("保存 Docker Registry 设置失败");
   } finally {
     savingDocker.value = false;
   }
@@ -618,11 +718,11 @@ const saveDockerSettings = async () => {
 const testDockerSettings = async () => {
   try {
     // 实际项目中应该调用API测试 Docker Registry 设置
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    ElMessage.success('Docker Registry 连接测试成功');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    ElMessage.success("Docker Registry 连接测试成功");
   } catch (error) {
-    console.error('Docker Registry 连接测试失败:', error);
-    ElMessage.error('Docker Registry 连接测试失败');
+    console.error("Docker Registry 连接测试失败:", error);
+    ElMessage.error("Docker Registry 连接测试失败");
   }
 };
 
@@ -630,17 +730,17 @@ const testDockerSettings = async () => {
 const refreshSystemStatus = async () => {
   try {
     // 实际项目中应该调用API获取系统状态
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // 模拟更新系统状态
     systemStatus.cpu_usage = `${Math.floor(Math.random() * 50) + 10}%`;
     systemStatus.memory_usage = `${Math.floor(Math.random() * 50) + 20}%`;
     systemStatus.active_users = `${Math.floor(Math.random() * 20) + 5}`;
 
-    ElMessage.success('系统状态已刷新');
+    ElMessage.success("系统状态已刷新");
   } catch (error) {
-    console.error('刷新系统状态失败:', error);
-    ElMessage.error('刷新系统状态失败');
+    console.error("刷新系统状态失败:", error);
+    ElMessage.error("刷新系统状态失败");
   }
 };
 
@@ -650,11 +750,11 @@ const backupDatabase = async () => {
 
   try {
     // 实际项目中应该调用API备份数据库
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    ElMessage.success('数据库备份成功');
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    ElMessage.success("数据库备份成功");
   } catch (error) {
-    console.error('数据库备份失败:', error);
-    ElMessage.error('数据库备份失败');
+    console.error("数据库备份失败:", error);
+    ElMessage.error("数据库备份失败");
   } finally {
     backingUp.value = false;
   }
@@ -666,11 +766,11 @@ const optimizeDatabase = async () => {
 
   try {
     // 实际项目中应该调用API优化数据库
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    ElMessage.success('数据库优化成功');
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    ElMessage.success("数据库优化成功");
   } catch (error) {
-    console.error('数据库优化失败:', error);
-    ElMessage.error('数据库优化失败');
+    console.error("数据库优化失败:", error);
+    ElMessage.error("数据库优化失败");
   } finally {
     optimizing.value = false;
   }
@@ -679,19 +779,23 @@ const optimizeDatabase = async () => {
 // 处理数据库文件变更
 const handleDatabaseFileChange = async (file) => {
   try {
-    await ElMessageBox.confirm('确定要恢复数据库吗？此操作将覆盖当前数据库，且不可恢复。', '恢复确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    });
+    await ElMessageBox.confirm(
+      "确定要恢复数据库吗？此操作将覆盖当前数据库，且不可恢复。",
+      "恢复确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
 
     // 实际项目中应该调用API上传并恢复数据库
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    ElMessage.success('数据库恢复成功');
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    ElMessage.success("数据库恢复成功");
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('数据库恢复失败:', error);
-      ElMessage.error('数据库恢复失败');
+    if (error !== "cancel") {
+      console.error("数据库恢复失败:", error);
+      ElMessage.error("数据库恢复失败");
     }
   }
 };
@@ -702,19 +806,19 @@ const refreshLogs = async () => {
 
   try {
     // 实际项目中应该调用API获取日志列表
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // 模拟更新日志大小和修改时间
-    logs.value = logs.value.map(log => ({
+    logs.value = logs.value.map((log) => ({
       ...log,
       size: Math.floor(Math.random() * 5242880) + 524288,
-      modified: new Date().toLocaleString()
+      modified: new Date().toLocaleString(),
     }));
 
-    ElMessage.success('日志列表已刷新');
+    ElMessage.success("日志列表已刷新");
   } catch (error) {
-    console.error('刷新日志列表失败:', error);
-    ElMessage.error('刷新日志列表失败');
+    console.error("刷新日志列表失败:", error);
+    ElMessage.error("刷新日志列表失败");
   } finally {
     loadingLogs.value = false;
   }
@@ -734,13 +838,13 @@ const viewLog = async (name) => {
 
   try {
     // 实际项目中应该调用API获取日志内容
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // 模拟日志内容
     logContent.value = `[2023-05-18 10:00:00] [INFO] 系统启动\n[2023-05-18 10:01:00] [INFO] 用户 admin 登录\n[2023-05-18 10:05:00] [INFO] 创建流水线 #123\n[2023-05-18 10:10:00] [INFO] 流水线 #123 开始运行\n[2023-05-18 10:15:00] [INFO] 流水线 #123 构建阶段完成\n[2023-05-18 10:20:00] [INFO] 流水线 #123 测试阶段完成\n[2023-05-18 10:25:00] [INFO] 流水线 #123 部署阶段完成\n[2023-05-18 10:30:00] [INFO] 流水线 #123 运行成功`;
   } catch (error) {
-    console.error('获取日志内容失败:', error);
-    logContent.value = '获取日志内容失败';
+    console.error("获取日志内容失败:", error);
+    logContent.value = "获取日志内容失败";
   } finally {
     loadingLogContent.value = false;
   }
@@ -749,19 +853,23 @@ const viewLog = async (name) => {
 // 删除日志
 const deleteLog = async (name) => {
   try {
-    await ElMessageBox.confirm(`确定要删除日志 ${name} 吗？此操作不可恢复。`, '删除确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    });
+    await ElMessageBox.confirm(
+      `确定要删除日志 ${name} 吗？此操作不可恢复。`,
+      "删除确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
 
     // 实际项目中应该调用API删除日志
-    logs.value = logs.value.filter(log => log.name !== name);
+    logs.value = logs.value.filter((log) => log.name !== name);
     ElMessage.success(`日志 ${name} 已删除`);
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除日志失败:', error);
-      ElMessage.error('删除日志失败');
+    if (error !== "cancel") {
+      console.error("删除日志失败:", error);
+      ElMessage.error("删除日志失败");
     }
   }
 };
@@ -769,32 +877,36 @@ const deleteLog = async (name) => {
 // 清除所有日志
 const clearAllLogs = async () => {
   try {
-    await ElMessageBox.confirm('确定要清除所有日志吗？此操作不可恢复。', '清除确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    });
+    await ElMessageBox.confirm(
+      "确定要清除所有日志吗？此操作不可恢复。",
+      "清除确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
 
     // 实际项目中应该调用API清除所有日志
     logs.value = [];
-    ElMessage.success('所有日志已清除');
+    ElMessage.success("所有日志已清除");
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('清除日志失败:', error);
-      ElMessage.error('清除日志失败');
+    if (error !== "cancel") {
+      console.error("清除日志失败:", error);
+      ElMessage.error("清除日志失败");
     }
   }
 };
 
 // 格式化文件大小
 const formatFileSize = (bytes) => {
-  if (!bytes || bytes === 0) return '0 B';
+  if (!bytes || bytes === 0) return "0 B";
 
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 onMounted(() => {
@@ -857,7 +969,7 @@ h3 {
 }
 
 .log-content {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   white-space: pre-wrap;
   word-break: break-all;
   margin: 0;

@@ -337,6 +337,7 @@ import {
   Refresh,
 } from "@element-plus/icons-vue";
 import dayjs from "dayjs";
+import { pipelineApi } from "@/api/pipeline";
 
 const route = useRoute();
 const router = useRouter();
@@ -405,9 +406,9 @@ const fetchPipelineRuns = async () => {
       limit: pagination.pageSize,
     };
 
-    const response = await pipelineStore.getPipelineRuns(pipelineId, params);
-    pipelineRuns.value = response.data || [];
-    pagination.total = response.total || 0;
+    const response = await pipelineApi.getPipelineRuns(pipelineId, params);
+    pipelineRuns.value = response.data.list || [];
+    pagination.total = response.data.total || 0;
   } catch (error) {
     console.error("Failed to fetch pipeline runs:", error);
     ElMessage.error("获取流水线运行记录失败");

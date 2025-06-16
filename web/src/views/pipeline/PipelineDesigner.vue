@@ -110,9 +110,24 @@ import { ElMessage } from "element-plus";
 
 const nodeTypes: NodeType[] = [
   { type: "task", label: "任务节点", acceptsInput: true, providesOutput: true },
-  { type: "condition", label: "条件节点", acceptsInput: true, providesOutput: true },
-  { type: "parallel", label: "并行节点", acceptsInput: true, providesOutput: true },
-  { type: "approval", label: "审批节点", acceptsInput: true, providesOutput: false },
+  {
+    type: "condition",
+    label: "条件节点",
+    acceptsInput: true,
+    providesOutput: true,
+  },
+  {
+    type: "parallel",
+    label: "并行节点",
+    acceptsInput: true,
+    providesOutput: true,
+  },
+  {
+    type: "approval",
+    label: "审批节点",
+    acceptsInput: true,
+    providesOutput: false,
+  },
 ];
 
 const router = useRouter();
@@ -125,12 +140,13 @@ const draggingNode = ref<DAGNode | null>(null);
 const canvasWidth = ref(1000);
 const canvasHeight = ref(1000);
 const tempEdges = ref<DAGEdge[]>([]);
-const CONNECT_THRESHOLD = 200; 
+const CONNECT_THRESHOLD = 200;
 
 const selectedNode = computed(() => {
-  return currentDAG.value.nodes.find(
-    (node) => node.id === selectedNodeId.value
-  );
+  const targetNode = currentDAG.value.nodes
+    ? currentDAG.value.nodes.find((node) => node.id === selectedNodeId.value)
+    : undefined;
+  return targetNode;
 });
 
 onMounted(async () => {
@@ -152,6 +168,9 @@ const handleCanvasDrop = (e: DragEvent) => {
   const rect = canvasRef.value.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
+  if (!currentDAG.value.nodes) {
+    currentDAG.value.nodes = [];
+  }
   currentDAG.value.nodes.push({
     id: `node-${Date.now()}`,
     type: dragType.type,
@@ -174,7 +193,7 @@ const handleNodeMouseMove = (e: MouseEvent) => {
       x: initialPosition.x + deltaX,
       y: initialPosition.y + deltaY,
     };
-    calculateTempEdges(); 
+    calculateTempEdges();
   });
 };
 
@@ -217,7 +236,7 @@ const handleNodeMouseUp = () => {
   if (animationFrameId) cancelAnimationFrame(animationFrameId);
   document.removeEventListener("mousemove", handleNodeMouseMove);
   document.removeEventListener("mouseup", handleNodeMouseUp);
-  calculateTempEdges(); 
+  calculateTempEdges();
 };
 
 let edgeStart: { nodeId: string; port: "in" | "out" } | null = null;
@@ -230,15 +249,19 @@ const handlePortMouseDown = (port: "in" | "out", node: DAGNode) => {
 const getEdgePath = (edge: DAGEdge) => {
   const startNode = currentDAG.value.nodes.find((n) => n.id === edge.source)!;
   const endNode = currentDAG.value.nodes.find((n) => n.id === edge.target)!;
-  const startX = startNode.position.x + 150; 
-  const startY = startNode.position.y + 12; 
+  const startX = startNode.position.x + 150;
+  const startY = startNode.position.y + 12;
   const endX = endNode.position.x;
   const endY = endNode.position.y + 12;
-  return `M ${startX} ${startY} C ${startX + 50} ${startY}, ${endX - 50} ${endY}, ${endX} ${endY}`;
+  return `M ${startX} ${startY} C ${startX + 50} ${startY}, ${
+    endX - 50
+  } ${endY}, ${endX} ${endY}`;
 };
 
 const deleteNode = (nodeId: string) => {
-  currentDAG.value.nodes = currentDAG.value.nodes.filter((n) => n.id !== nodeId);
+  currentDAG.value.nodes = currentDAG.value.nodes.filter(
+    (n) => n.id !== nodeId
+  );
   currentDAG.value.edges = currentDAG.value.edges.filter(
     (e) => e.source !== nodeId && e.target !== nodeId
   );
@@ -247,7 +270,7 @@ const deleteNode = (nodeId: string) => {
 
 const saveDAG = async () => {
   try {
-    await pipelineApi.updateDAG(pipelineId, currentDAG.value);
+    await pipelineApi.updateDAG(pipelineId, currentDAG.value[0]);
     ElMessage.success("DAG保存成功");
   } catch (error) {
     ElMessage.error("DAG保存失败");
