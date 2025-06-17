@@ -4,13 +4,8 @@ export const authApi = {
   login(data: any) {
     return http.post("/v1/user/login", data);
   },
-
-  logout() {
-    return http.post("/auth/logout");
-  },
-
   getUserInfo() {
-    return http.get("/v1/user/info ");
+    return http.get("/v1/user/info");
   },
 
   updateUserInfo(data: any) {

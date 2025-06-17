@@ -1,8 +1,9 @@
 package response
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Response 统一响应结构
@@ -21,8 +22,8 @@ type PageResult struct {
 }
 
 const (
-	SUCCESS = 0
-	ERROR   = 1
+	SUCCESS = 200
+	ERROR   = 500
 )
 
 // Result 返回结果

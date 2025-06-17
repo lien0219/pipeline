@@ -3,7 +3,6 @@ package middleware
 import (
 	"errors"
 	"gin_pipeline/global"
-	"gin_pipeline/model/response"
 	"gin_pipeline/utils"
 	_ "net/http"
 	_ "strconv"
@@ -18,8 +17,10 @@ func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.Request.Header.Get("Authorization")
 		if tokenString == "" {
-			response.FailWithDetailed(gin.H{"reload": true}, "未登录或非法访问", c)
-			c.Abort()
+			// response.FailWithDetailed(gin.H{"reload": true}, "未登录或非法访问", c)
+			// c.Abort()
+			// return
+			c.AbortWithStatusJSON(401, gin.H{"code": 1, "data": gin.H{"reload": true}, "msg": "未登录或非法访问"})
 			return
 		}
 
@@ -32,12 +33,16 @@ func JWTAuth() gin.HandlerFunc {
 		claims, err := j.ParseToken(tokenString)
 		if err != nil {
 			if errors.Is(err, utils.TokenExpired) {
-				response.FailWithDetailed(gin.H{"reload": true}, "授权已过期", c)
-				c.Abort()
+				// response.FailWithDetailed(gin.H{"reload": true}, "授权已过期", c)
+				// c.Abort()
+				// return
+				c.AbortWithStatusJSON(401, gin.H{"code": 1, "data": gin.H{"reload": true}, "msg": "授权已过期"})
 				return
 			}
-			response.FailWithDetailed(gin.H{"reload": true}, err.Error(), c)
-			c.Abort()
+			// response.FailWithDetailed(gin.H{"reload": true}, err.Error(), c)
+			// c.Abort()
+			// return
+			c.AbortWithStatusJSON(401, gin.H{"code": 1, "data": gin.H{"reload": true}, "msg": err.Error()})
 			return
 		}
 
