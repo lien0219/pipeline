@@ -1167,6 +1167,33 @@ definitions:
       total:
         type: integer
     type: object
+  response.PipelineChartData:
+    properties:
+      dates:
+        items:
+          type: string
+        type: array
+      failed:
+        items:
+          type: integer
+        type: array
+      pending:
+        items:
+          type: integer
+        type: array
+      running:
+        items:
+          type: integer
+        type: array
+      success:
+        items:
+          type: integer
+        type: array
+      total:
+        items:
+          type: integer
+        type: array
+    type: object
   response.Response:
     properties:
       code:
@@ -1773,6 +1800,44 @@ paths:
       security:
       - BearerAuth: []
       summary: 创建DAG的新版本
+      tags:
+      - DAG管理
+  /dag/all:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有流水线的所有DAG，支持分页
+      parameters:
+      - description: 页码，默认1
+        in: query
+        name: page
+        type: integer
+      - description: 每页条数，默认10
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.DAG'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取所有DAG
       tags:
       - DAG管理
   /dag/pipeline/{pipelineId}:
@@ -2421,6 +2486,28 @@ paths:
       security:
       - BearerAuth: []
       summary: 触发流水线
+      tags:
+      - 流水线管理
+  /pipeline/chart-data:
+    get:
+      consumes:
+      - application/json
+      description: 获取近7天流水线执行统计数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PipelineChartData'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取流水线图表数据
       tags:
       - 流水线管理
   /release:

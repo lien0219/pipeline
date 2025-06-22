@@ -27,7 +27,7 @@ log:
 mysql:
   path: localhost # 服务器地址
   port: 3306 # 端口
-  config: charset=utf8mb4&parseTime=True&loc=Local # 其他配置
+  config: charset=utf8mb4&parseTime=True&loc=UTC # 其他配置
   db_name: assembly_line # 数据库名
   username: root # 用户名
   password: lyn123 # 密码

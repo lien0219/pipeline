@@ -64,7 +64,7 @@
           </el-row>
 
           <div class="chart-container">
-            <div ref="pipelineChart" style="width: 100%; height: 300px"></div>
+            <div ref="pipelineChart" style="width: 100%; height: 400px"></div>
           </div>
         </el-card>
 
@@ -99,13 +99,11 @@
               </template>
             </el-table-column>
 
-            <el-table-column prop="branch" label="分支" width="120" />
-
-            <!-- <el-table-column prop="duration" label="耗时" width="120">
+            <el-table-column prop="branch" label="分支" width="120">
               <template #default="{ row }">
-                {{ formatDuration(row.duration) }}
+                {{ row.git_branch }}
               </template>
-            </el-table-column> -->
+            </el-table-column>
 
             <el-table-column prop="created_at" label="创建时间" width="180">
               <template #default="{ row }">
@@ -191,6 +189,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { usePipelineStore } from "@/stores/pipeline";
+import { pipelineApi } from "@/api/pipeline";
 import {
   Check,
   Loading,
@@ -243,29 +242,29 @@ const activities = ref([]);
 const fetchData = async () => {
   loading.value = true;
   try {
-    // 获取流水线数据
-    const response = await pipelineStore.fetchPipelines({
-      page: 1,
-      pageSize: 10,
-    });
-    recentPipelines.value = response.data.list || [];
+    const [
+      pipelinesResponse,
+      statsResponse,
+      activitiesResponse,
+      chartDataResponse,
+    ] = await Promise.all([
+      pipelineStore.fetchPipelines({ page: 1, pageSize: 10 }),
+      pipelineStore.getDashboardStats(),
+      pipelineStore.getDashboardActivities({ limit: 10 }),
+      pipelineApi.getPipelineChartData(),
+    ]);
 
-    // 统计数据
-    const statsResponse = await pipelineStore.getDashboardStats();
+    recentPipelines.value = pipelinesResponse.data.list || [];
     stats.value = {
       success: statsResponse?.Success,
       running: statsResponse?.Running,
       failed: statsResponse?.Failed,
       pending: statsResponse?.Pending,
     };
-
-    // 模拟活动数据
-    const activitiesResponse = await pipelineStore.getDashboardActivities({
-      limit: 10,
-    });
     activities.value = activitiesResponse;
 
-    initChart();
+    const chartData = chartDataResponse.data;
+    initChart(chartData);
   } catch (error) {
     console.error("Failed to fetch dashboard data:", error);
   } finally {
@@ -274,7 +273,7 @@ const fetchData = async () => {
 };
 
 // 初始化图表
-const initChart = () => {
+const initChart = (chartData) => {
   if (!pipelineChart.value) return;
 
   if (chart.value) {
@@ -284,97 +283,143 @@ const initChart = () => {
   chart.value = echarts.init(pipelineChart.value);
 
   const option = {
+    backgroundColor: "#1a1a1a",
     title: {
       text: "流水线执行趋势",
       left: "center",
+      textStyle: {
+        color: "#fff",
+        fontSize: 20,
+      },
     },
     tooltip: {
       trigger: "axis",
+      axisPointer: {
+        type: "cross",
+        animation: false,
+        label: {
+          backgroundColor: "#505765",
+        },
+      },
     },
     legend: {
       data: ["成功", "失败", "总数"],
-      bottom: 0,
-    },
-    grid: {
-      left: "3%",
-      right: "4%",
-      bottom: "10%",
-      top: "15%",
-      containLabel: true,
+      bottom: 20,
+      textStyle: {
+        color: "#fff",
+      },
     },
     xAxis: {
       type: "category",
       boundaryGap: false,
-      data: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
+      data: chartData.dates,
+      axisLine: {
+        lineStyle: {
+          color: "#8392A5",
+        },
+      },
+      axisLabel: {
+        color: "#fff",
+      },
     },
     yAxis: {
       type: "value",
+      axisLine: {
+        lineStyle: {
+          color: "#8392A5",
+        },
+      },
+      splitLine: {
+        lineStyle: {
+          color: "rgba(255,255,255,0.1)",
+        },
+      },
+      axisLabel: {
+        color: "#fff",
+      },
     },
     series: [
       {
         name: "成功",
         type: "line",
-        data: [5, 7, 6, 9, 8, 7, 10],
+        smooth: true,
+        symbolSize: 10,
         itemStyle: {
-          color: "#67C23A",
+          color: "#00ff00",
+          shadowColor: "rgba(0, 255, 0, 0.5)",
+          shadowBlur: 10,
+          shadowOffsetY: 5,
         },
         areaStyle: {
-          color: {
-            type: "linear",
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: "rgba(103, 194, 58, 0.3)" },
-              { offset: 1, color: "rgba(103, 194, 58, 0.1)" },
-            ],
-          },
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: "rgba(0, 255, 0, 0.3)",
+            },
+            {
+              offset: 1,
+              color: "rgba(0, 255, 0, 0.1)",
+            },
+          ]),
         },
+        data: chartData.success,
+        animationDelay: (idx) => idx * 100,
       },
       {
         name: "失败",
         type: "line",
-        data: [2, 1, 3, 1, 2, 0, 1],
+        smooth: true,
+        symbolSize: 10,
         itemStyle: {
-          color: "#F56C6C",
+          color: "#ff0000",
+          shadowColor: "rgba(255, 0, 0, 0.5)",
+          shadowBlur: 10,
+          shadowOffsetY: 5,
         },
         areaStyle: {
-          color: {
-            type: "linear",
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: "rgba(245, 108, 108, 0.3)" },
-              { offset: 1, color: "rgba(245, 108, 108, 0.1)" },
-            ],
-          },
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: "rgba(255, 0, 0, 0.3)",
+            },
+            {
+              offset: 1,
+              color: "rgba(255, 0, 0, 0.1)",
+            },
+          ]),
         },
+        data: chartData.failed,
+        animationDelay: (idx) => idx * 100 + 100,
       },
       {
         name: "总数",
         type: "line",
-        data: [7, 8, 9, 10, 10, 7, 11],
+        smooth: true,
+        symbolSize: 10,
         itemStyle: {
-          color: "#409EFF",
+          color: "#0000ff",
+          shadowColor: "rgba(0, 0, 255, 0.5)",
+          shadowBlur: 10,
+          shadowOffsetY: 5,
         },
         areaStyle: {
-          color: {
-            type: "linear",
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: "rgba(64, 158, 255, 0.3)" },
-              { offset: 1, color: "rgba(64, 158, 255, 0.1)" },
-            ],
-          },
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+              offset: 0,
+              color: "rgba(0, 0, 255, 0.3)",
+            },
+            {
+              offset: 1,
+              color: "rgba(0, 0, 255, 0.1)",
+            },
+          ]),
         },
+        data: chartData.total,
+        animationDelay: (idx) => idx * 100 + 200,
       },
     ],
+    animationEasing: "elasticOut",
+    animationDuration: 1500,
   };
 
   chart.value.setOption(option);
@@ -405,8 +450,10 @@ const getStatusType = (status) => {
       return "primary";
     case "failed":
       return "danger";
-    case "pending":
+    case "inactive":
       return "info";
+    case "active":
+      return "success";
     default:
       return "info";
   }
@@ -420,8 +467,10 @@ const getStatusText = (status) => {
       return "运行中";
     case "failed":
       return "失败";
-    case "pending":
-      return "等待中";
+    case "active":
+      return "已激活";
+    case "inactive":
+      return "未使用";
     default:
       return "未知";
   }
@@ -444,20 +493,6 @@ const getActivityType = (type) => {
 // 格式化日期
 const formatDate = (date) => {
   return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
-};
-
-// 格式化持续时间
-const formatDuration = (seconds) => {
-  if (!seconds) return "0s";
-
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-
-  if (minutes === 0) {
-    return `${remainingSeconds}s`;
-  }
-
-  return `${minutes}m ${remainingSeconds}s`;
 };
 
 // 监听窗口大小变化
@@ -541,6 +576,10 @@ onUnmounted(() => {
 
 .chart-container {
   margin-top: 20px;
+  background: #434242;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .pipeline-link {

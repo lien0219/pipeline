@@ -2,20 +2,25 @@
   <div class="sidebar">
     <div class="logo-container">
       <router-link to="/">
-        <img v-if="!collapse" src="@/assets/vue.svg" alt="CICD Pipeline" class="logo-img" />
+        <img
+          v-if="!collapse"
+          src="@/assets/vue.svg"
+          alt="CICD Pipeline"
+          class="logo-img"
+        />
         <img v-else src="@/assets/vue.svg" alt="CICD" class="logo-icon" />
       </router-link>
     </div>
 
     <el-scrollbar>
       <el-menu
-          :default-active="activeMenu"
-          :collapse="collapse"
-          background-color="#304156"
-          text-color="#bfcbd9"
-          active-text-color="#409EFF"
-          unique-opened
-          router
+        :default-active="activeMenu"
+        :collapse="collapse"
+        background-color="#304156"
+        text-color="#bfcbd9"
+        active-text-color="#409EFF"
+        unique-opened
+        router
       >
         <el-menu-item index="/">
           <el-icon><Monitor /></el-icon>
@@ -50,6 +55,11 @@
           <template #title>制品管理</template>
         </el-menu-item>
 
+        <el-menu-item index="/dags">
+          <el-icon><DataAnalysis /></el-icon>
+          <template #title>DAG管理</template>
+        </el-menu-item>
+
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
           <template #title>系统设置</template>
@@ -60,16 +70,24 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-import { ref } from 'vue';
-import { Monitor, Connection, Box, Upload, Files, Setting } from '@element-plus/icons-vue';
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+import { ref } from "vue";
+import {
+  Monitor,
+  Connection,
+  Box,
+  Upload,
+  Files,
+  Setting,
+  DataAnalysis,
+} from "@element-plus/icons-vue";
 
 const props = defineProps({
   collapse: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 const route = useRoute();

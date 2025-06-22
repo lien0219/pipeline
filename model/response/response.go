@@ -35,6 +35,16 @@ func Result(code int, data interface{}, msg string, c *gin.Context) {
 	})
 }
 
+// PipelineChartData 流水线图表数据
+type PipelineChartData struct {
+	Dates   []string `json:"dates"`
+	Success []int64  `json:"success"`
+	Failed  []int64  `json:"failed"`
+	Running []int64  `json:"running"`
+	Pending []int64  `json:"pending"`
+	Total   []int64  `json:"total"`
+}
+
 // Ok 成功返回
 func Ok(c *gin.Context) {
 	Result(SUCCESS, map[string]interface{}{}, "操作成功", c)

@@ -40,13 +40,16 @@ export const usePipelineStore = defineStore("pipeline", () => {
     }
   }
 
-  async function createPipeline(pipelineData) {
+  async function createPipeline(pipelineData: any) {
     loading.value = true;
     error.value = null;
 
     try {
       const response = await pipelineApi.createPipeline(pipelineData);
-      pipelines.value.push(response.data);
+      if (!Array.isArray(pipelines.value)) {
+        pipelines.value = [];
+      }
+      pipelines.value.push(response?.data);
       return response;
     } catch (err) {
       error.value = err.message || "Failed to create pipeline";

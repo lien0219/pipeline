@@ -81,6 +81,30 @@ const routes = [
         meta: { requiresAuth: true, title: "制品管理" },
       },
       {
+        path: "dags",
+        name: "DagList",
+        component: () => import("@/views/dag/DagList.vue"),
+        meta: { requiresAuth: true, title: "DAG管理" },
+      },
+      {
+        path: "dags/:id",
+        name: "DagDetail",
+        component: () => import("@/views/dag/DagDetail.vue"),
+        meta: { requiresAuth: true, title: "DAG详情" },
+      },
+      {
+        path: "dags/create",
+        name: "DagCreate",
+        component: () => import("@/views/dag/DagCreate.vue"),
+        meta: { requiresAuth: true, title: "创建DAG" },
+      },
+      {
+        path: "dags/:id/edit",
+        name: "DagEdit",
+        component: () => import("@/views/dag/DagCreate.vue"),
+        meta: { requiresAuth: true, title: "编辑DAG" },
+      },
+      {
         path: "settings",
         name: "Settings",
         component: () => import("@/views/settings/Settings.vue"),

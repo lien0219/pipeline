@@ -342,3 +342,28 @@ func ActivateDAG(c *gin.Context) {
 
 	response.OkWithMessage("激活DAG成功", c)
 }
+
+// GetAllDAGs 获取所有流水线的所有DAG（分页）
+// @Summary 获取所有DAG
+// @Description 获取所有流水线的所有DAG，支持分页
+// @Tags DAG管理
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param page query int false "页码，默认1"
+// @Param pageSize query int false "每页条数，默认10"
+// @Success 200 {object} response.Response{data=response.PageResult{list=[]model.DAG}}
+// @Router /dag/all [get]
+func GetAllDAGs(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	result, err := dagService.GetAllDAGs(page, pageSize)
+	if err != nil {
+		global.Log.Error("获取所有DAG失败", zap.Error(err))
+		response.FailWithMessage("获取所有DAG失败", c)
+		return
+	}
+
+	response.OkWithData(result, c)
+}

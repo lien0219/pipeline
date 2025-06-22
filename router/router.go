@@ -48,6 +48,7 @@ func InitPipelineRouter(Router *gin.RouterGroup) {
 		PipelineRouter.GET("/:id/runs/:runId", v1.GetPipelineRunByID)
 		PipelineRouter.GET("/:id/runs/:runId/logs", v1.GetPipelineRunLogs)
 		PipelineRouter.POST("/:id/runs/:runId/cancel", v1.CancelPipelineRun)
+		PipelineRouter.GET("/chart-data", v1.GetPipelineChartData)
 	}
 }
 
@@ -114,6 +115,7 @@ func InitDAGRouter(Router *gin.RouterGroup) {
 		DAGRouter.POST("/:id/version", v1.CreateDAGVersion)
 		DAGRouter.GET("/pipeline/:pipelineId/history", v1.GetDAGHistory)
 		DAGRouter.POST("/:id/activate", v1.ActivateDAG)
+		DAGRouter.GET("/all", v1.GetAllDAGs)
 	}
 }
 

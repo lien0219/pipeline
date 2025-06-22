@@ -6,7 +6,9 @@ import (
 	"gin_pipeline/model/request"
 	"gin_pipeline/model/response"
 	"gin_pipeline/service"
+	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -539,8 +541,20 @@ func TriggerPipeline(c *gin.Context) {
 	workflowService := service.NewWorkflowService()
 	pipelineRun, err := workflowService.TriggerWorkflow(pipeline.ID, userID, gitBranch)
 	if err != nil {
-		global.Log.Error("触发流水线失败", zap.Error(err))
-		response.FailWithMessage("触发流水线失败: "+err.Error(), c)
+		// global.Log.Error("触发流水线失败", zap.Error(err))
+		// response.FailWithMessage("触发流水线失败: "+err.Error(), c)
+		// return
+		if strings.Contains(err.Error(), "未找到符合条件的DAG记录") {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "流水线未配置活动DAG"})
+		} else if strings.Contains(err.Error(), "record not found") {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message":     "流水线未配置活动DAG",
+				"pipeline_id": id,
+				"solution":    "请为该流水线创建并激活至少一个DAG",
+			})
+		} else {
+			response.FailWithMessage("服务器内部错误", c)
+		}
 		return
 	}
 
@@ -639,4 +653,25 @@ func GetRecentActivities(c *gin.Context) {
 	global.DB.Order("timestamp DESC").Limit(req.Limit).Find(&activities)
 
 	response.OkWithData(activities, c)
+}
+
+// GetPipelineChartData 获取流水线图表数据
+// @Summary 获取流水线图表数据
+// @Description 获取近7天流水线执行统计数据
+// @Tags 流水线管理
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} response.Response{data=response.PipelineChartData}
+// @Router /pipeline/chart-data [get]
+func GetPipelineChartData(c *gin.Context) {
+	days := 7 // 获取近7天数据
+	statsService := service.NewStatsService()
+	result, err := statsService.GetPipelineRunStatsByDate(days)
+	if err != nil {
+		global.Log.Error("获取图表数据失败", zap.Error(err))
+		response.FailWithMessage("获取图表数据失败", c)
+		return
+	}
+	response.OkWithData(result, c)
 }

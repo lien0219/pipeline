@@ -56,7 +56,7 @@ func (s *WorkflowService) TriggerWorkflow(pipelineID uint, userID uint, gitBranc
 	}
 
 	// 创建流水线运行记录
-	now := time.Now()
+	now := time.Now().UTC()
 	pipelineRun := model.PipelineRun{
 		PipelineID: pipelineID,
 		Status:     "pending",
@@ -148,7 +148,7 @@ func (s *WorkflowService) executeWorkflow(dag *model.DAG, pipelineRun *model.Pip
 	}
 
 	// 更新运行结果
-	now := time.Now()
+	now := time.Now().UTC()
 	duration := int(now.Sub(*pipelineRun.StartTime).Seconds())
 	status := "success"
 	if err != nil {

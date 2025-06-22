@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gin_pipeline/global"
 	"gin_pipeline/model"
+	"gin_pipeline/model/response"
 
 	"go.uber.org/zap"
 )
@@ -89,29 +90,35 @@ func (s *DAGService) GetActiveDAGByPipelineID(pipelineID uint) (*model.DAG, erro
 
 // UpdateDAG 更新DAG
 func (s *DAGService) UpdateDAG(id uint, updates map[string]interface{}) error {
+	var dag model.DAG
+	if err := global.DB.First(&dag, id).Error; err != nil {
+		return err
+	}
 	// 如果更新包含节点数据，需要验证
 	if nodes, ok := updates["nodes_data"].([]model.DAGNode); ok {
 		if err := s.ValidateDAG(nodes); err != nil {
 			return err
 		}
+		dag.NodesData = nodes
+		delete(updates, "nodes_data")
 	}
 
 	// 如果设置为活动版本，将同一流水线的其他DAG设为非活动
 	if isActive, ok := updates["is_active"].(bool); ok && isActive {
-		var dag model.DAG
-		if err := global.DB.First(&dag, id).Error; err != nil {
-			return err
-		}
-
 		if err := global.DB.Model(&model.DAG{}).
 			Where("pipeline_id = ? AND id != ? AND is_active = ?", dag.PipelineID, id, true).
 			Update("is_active", false).Error; err != nil {
 			global.Log.Error("更新其他DAG状态失败", zap.Error(err))
 			return err
 		}
+		dag.IsActive = isActive
+		delete(updates, "is_active")
 	}
 
-	return global.DB.Model(&model.DAG{}).Where("id = ?", id).Updates(updates).Error
+	if err := global.DB.Model(&dag).Updates(updates).Error; err != nil {
+		return err
+	}
+	return global.DB.Save(&dag).Error
 }
 
 // DeleteDAG 删除DAG
@@ -184,6 +191,16 @@ func (s *DAGService) ValidateDAG(nodes []model.DAGNode) error {
 			if _, exists := nodeMap[depID.(string)]; !exists {
 				return errors.New("依赖节点不存在: " + depID.(string))
 			}
+		}
+	}
+	// 验证任务类型是否有效
+	validTypes := map[string]bool{"shell": true, "docker": true, "kubernetes": true}
+	for _, node := range nodes {
+		if node.Type == "" {
+			return errors.New("节点类型不能为空: " + node.ID)
+		}
+		if !validTypes[node.Type] {
+			return errors.New("无效的节点类型: " + node.Type + " (节点ID: " + node.ID + ")")
 		}
 	}
 
@@ -269,4 +286,28 @@ func (s *DAGService) ActivateDAG(dagID uint) error {
 
 	// 提交事务
 	return tx.Commit().Error
+}
+
+// GetAllDAGs 获取所有DAG（分页）
+func (s *DAGService) GetAllDAGs(page, pageSize int) (*response.PageResult, error) {
+	var dags []model.DAG
+	var total int64
+
+	// 获取总数
+	if err := global.DB.Model(&model.DAG{}).Count(&total).Error; err != nil {
+		return nil, err
+	}
+
+	// 分页查询
+	offset := (page - 1) * pageSize
+	if err := global.DB.Preload("Pipeline").Order("created_at DESC").Limit(pageSize).Offset(offset).Find(&dags).Error; err != nil {
+		return nil, err
+	}
+
+	return &response.PageResult{
+		List:     dags,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, nil
 }
