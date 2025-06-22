@@ -206,6 +206,15 @@ func GetPipelineByID(c *gin.Context) {
 		return
 	}
 
+	for i := range pipeline.Stages {
+		for j := range pipeline.Stages[i].Jobs {
+			jobID := pipeline.Stages[i].Jobs[j].ID
+			status, logs := getJobStatusAndLogs(jobID)
+			pipeline.Stages[i].Jobs[j].Status = status
+			pipeline.Stages[i].Jobs[j].Logs = logs
+		}
+	}
+
 	response.OkWithData(pipeline, c)
 }
 
@@ -665,7 +674,7 @@ func GetRecentActivities(c *gin.Context) {
 // @Success 200 {object} response.Response{data=response.PipelineChartData}
 // @Router /pipeline/chart-data [get]
 func GetPipelineChartData(c *gin.Context) {
-	days := 7 // 获取近7天数据
+	days := 8 // 获取近7天数据
 	statsService := service.NewStatsService()
 	result, err := statsService.GetPipelineRunStatsByDate(days)
 	if err != nil {
@@ -674,4 +683,26 @@ func GetPipelineChartData(c *gin.Context) {
 		return
 	}
 	response.OkWithData(result, c)
+}
+
+func getJobStatusAndLogs(jobID uint) (string, string) {
+	var job model.Job
+	if err := global.DB.First(&job, jobID).Error; err != nil {
+		global.Log.Error("查询作业失败", zap.Error(err), zap.Uint("jobID", jobID))
+		return "pending", ""
+	}
+
+	var stage model.Stage
+	if err := global.DB.First(&stage, job.StageID).Error; err != nil {
+		global.Log.Error("查询阶段失败", zap.Error(err), zap.Uint("stageID", job.StageID))
+		return "pending", ""
+	}
+
+	var pipelineRun model.PipelineRun
+	if err := global.DB.Where("pipeline_id = ?", stage.PipelineID).Order("created_at DESC").First(&pipelineRun).Error; err != nil {
+		global.Log.Error("查询流水线运行记录失败", zap.Error(err), zap.Uint("pipelineID", stage.PipelineID))
+		return "pending", ""
+	}
+
+	return pipelineRun.Status, pipelineRun.Logs
 }

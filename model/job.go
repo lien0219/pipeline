@@ -1,8 +1,9 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // Job 作业模型
@@ -15,8 +16,10 @@ type Job struct {
 	Description string         `gorm:"size:500" json:"description"`
 	Command     string         `gorm:"type:text;not null" json:"command"`
 	Image       string         `gorm:"size:255" json:"image"`
-	Timeout     int            `gorm:"default:3600" json:"timeout"` // 超时时间(秒)
+	Timeout     int            `gorm:"default:3600" json:"timeout"`
 	StageID     uint           `json:"stage_id"`
+	Status      string         `json:"status" gorm:"column:status"`
+	Logs        string         `json:"logs"`
 }
 
 // TableName 设置表名

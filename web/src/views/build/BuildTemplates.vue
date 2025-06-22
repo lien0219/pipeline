@@ -16,7 +16,7 @@
     <el-card>
       <div class="filter-container">
         <el-form :inline="true" :model="filterForm" class="filter-form">
-          <el-form-item label="名称">
+          <el-form-item label="名称" style="width: 200px">
             <el-input
               v-model="filterForm.name"
               placeholder="模板名称"
@@ -24,7 +24,7 @@
             />
           </el-form-item>
 
-          <el-form-item label="类型">
+          <el-form-item label="类型" style="width: 200px">
             <el-select
               v-model="filterForm.type"
               placeholder="全部类型"
@@ -59,12 +59,8 @@
         v-loading="loading"
         @sort-change="handleSortChange"
       >
-        <el-table-column
-          prop="name"
-          label="名称"
-          min-width="150"
-          sortable="custom"
-        />
+        <el-table-column prop="id" label="id" min-width="150" />
+        <el-table-column prop="name" label="名称" min-width="150" />
 
         <el-table-column prop="type" label="类型" width="120">
           <template #default="{ row }">
@@ -90,7 +86,7 @@
         <el-table-column
           prop="usage_count"
           label="使用次数"
-          width="100"
+          width="150"
           sortable="custom"
         />
 

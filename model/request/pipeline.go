@@ -49,3 +49,15 @@ type GetDashboardStatsRequest struct {
 type GetRecentActivitiesRequest struct {
 	Limit int `json:"limit" binding:"required,min=1,max=100"` // 限制返回的活动数量
 }
+
+// 构建历史查询参数
+type BuildHistoryRequest struct {
+	Page       int    `form:"page" binding:"required,min=1"`
+	Limit      int    `form:"limit" binding:"required,min=1,max=100"`
+	SortBy     string `form:"sort_by" binding:"omitempty,oneof=id start_time duration"`
+	SortOrder  string `form:"sort_order" binding:"omitempty,oneof=asc desc"`
+	PipelineID *uint  `form:"pipeline_id" binding:"omitempty,min=1"`
+	Status     string `form:"status" binding:"omitempty,oneof=success running failed pending canceled"`
+	StartDate  string `form:"start_date" binding:"omitempty,datetime=2006-01-02"`
+	EndDate    string `form:"end_date" binding:"omitempty,datetime=2006-01-02"`
+}

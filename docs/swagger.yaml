@@ -193,12 +193,15 @@ definitions:
         type: integer
       image:
         type: string
+      logs:
+        type: string
       name:
         type: string
       stage_id:
         type: integer
+      status:
+        type: string
       timeout:
-        description: 超时时间(秒)
         type: integer
       updated_at:
         type: string
@@ -1585,6 +1588,63 @@ paths:
       security:
       - BearerAuth: []
       summary: 应用构建模板
+      tags:
+      - 构建模板管理
+  /build-template/build-history:
+    get:
+      consumes:
+      - application/json
+      description: 获取流水线构建历史记录，支持筛选、排序和分页
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: 排序字段(id/start_time/duration)
+        in: query
+        name: sort_by
+        type: string
+      - description: 排序方向(asc/desc)
+        in: query
+        name: sort_order
+        type: string
+      - description: 流水线ID
+        in: query
+        name: pipeline_id
+        type: integer
+      - description: 运行状态
+        in: query
+        name: status
+        type: string
+      - description: 开始日期(YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期(YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.PageResult'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.PipelineRun'
+                  type: array
+              type: object
+      summary: 获取构建历史列表
       tags:
       - 构建模板管理
   /canary:

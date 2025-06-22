@@ -9,7 +9,7 @@
     <el-card>
       <div class="filter-container">
         <el-form :inline="true" :model="filterForm" class="filter-form">
-          <el-form-item label="流水线">
+          <el-form-item label="流水线" style="width: 200px">
             <el-select
               v-model="filterForm.pipeline_id"
               placeholder="选择流水线"
@@ -24,7 +24,7 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="状态">
+          <el-form-item label="状态" style="width: 200px">
             <el-select
               v-model="filterForm.status"
               placeholder="全部状态"
@@ -206,6 +206,8 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { usePipelineStore } from "@/stores/pipeline";
 import { Search, RefreshRight } from "@element-plus/icons-vue";
 import dayjs from "dayjs";
+import { templateApi } from "@/api/template";
+import { pipelineApi } from "@/api/pipeline";
 
 const router = useRouter();
 const pipelineStore = usePipelineStore();
@@ -260,9 +262,9 @@ const fetchBuildHistory = async () => {
           : undefined,
     };
 
-    const response = await pipelineStore.getBuildHistory(params);
-    buildRuns.value = response.data || [];
-    pagination.total = response.total || 0;
+    const response = await templateApi.getBuildHistory(params);
+    buildRuns.value = response.data.list || [];
+    pagination.total = response.data.total || 0;
   } catch (error) {
     console.error("Failed to fetch build history:", error);
     ElMessage.error("获取构建历史失败");
@@ -274,11 +276,11 @@ const fetchBuildHistory = async () => {
 // 获取流水线列表（用于筛选）
 const fetchPipelines = async () => {
   try {
-    const response = await pipelineStore.fetchPipelines({
+    const response = await pipelineApi.getPipelines({
       page: 1,
       pageSize: 10,
     });
-    pipelines.value = response.data || [];
+    pipelines.value = response.data.list || [];
   } catch (error) {
     console.error("Failed to fetch pipelines:", error);
   }
@@ -335,14 +337,11 @@ const viewLogs = async (pipelineId, runId) => {
 
   try {
     // 获取运行详情
-    const runResponse = await pipelineStore.getPipelineRunById(
-      pipelineId,
-      runId
-    );
+    const runResponse = await pipelineApi.getPipelineById(pipelineId);
     currentRun.value = runResponse.data;
 
     // 获取日志
-    const logsResponse = await pipelineStore.getPipelineRunLogs(
+    const logsResponse = await pipelineApi.getPipelineRunLogs(
       pipelineId,
       runId
     );
@@ -350,10 +349,13 @@ const viewLogs = async (pipelineId, runId) => {
     if (logsResponse.data.logs) {
       // 格式化日志
       let formattedLogs = "";
-      for (const stageId in logsResponse.data.logs) {
-        const stageLogs = logsResponse.data.logs[stageId];
-        for (const jobId in stageLogs) {
-          formattedLogs += `===== Job ${jobId} =====\n\n${stageLogs[jobId]}\n\n`;
+      for (const stage of currentRun.value.stages || []) {
+        formattedLogs += `===== Stage: ${stage.name} =====\n`;
+        for (const job of stage.jobs || []) {
+          formattedLogs += `\n----- Job: ${job.name} (${getStatusText(
+            job.status
+          )}) -----\n`;
+          formattedLogs += `${job.logs || "无日志"}\n\n`;
         }
       }
       logs.value = formattedLogs || "暂无日志";

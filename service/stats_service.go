@@ -27,6 +27,7 @@ func (s *StatsService) GetPipelineRunStatsByDate(days int) (*response.PipelineCh
 		date := today.AddDate(0, 0, -(days - 1 - i))
 		dates[i] = date.Format("2006-01-02")
 	}
+	global.Log.Info("生成的日期数组", zap.Strings("dates", dates))
 
 	// 查询统计数据
 	type statResult struct {
@@ -36,16 +37,17 @@ func (s *StatsService) GetPipelineRunStatsByDate(days int) (*response.PipelineCh
 	}
 	var results []statResult
 
-	startDate := today.AddDate(0, 0, -days+1).Format("2006-01-02")
+	startDate := today.AddDate(0, 0, -(days - 1)).Format("2006-01-02")
 	endDate := today.Format("2006-01-02")
 	global.Log.Info("统计查询条件(UTC)", zap.String("startDate", startDate), zap.String("endDate", endDate))
 	if err := global.DB.Model(&model.PipelineRun{}).
-		Select("DATE(start_time) as date, status, count(*) as count").
+		Select("DATE(CONVERT_TZ(start_time, '+00:00', '+00:00')) as date, status, count(*) as count").
 		Where("DATE(start_time) BETWEEN ? AND ?", startDate, endDate).
 		Group("date, status").
 		Scan(&results).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
+	global.Log.Info("查询到的统计结果", zap.Any("results", results))
 
 	// 初始化数据结构
 	data := &response.PipelineChartData{
@@ -58,13 +60,21 @@ func (s *StatsService) GetPipelineRunStatsByDate(days int) (*response.PipelineCh
 	}
 
 	// 填充数据
-	dateIndex := make(map[string]int)
-	for i, date := range dates {
+	dateIndex := make(map[time.Time]int)
+	for i, dateStr := range dates {
+		date, _ := time.Parse("2006-01-02", dateStr)
 		dateIndex[date] = i
 	}
 
 	for _, item := range results {
-		if idx, ok := dateIndex[item.Date]; ok {
+		itemDate, err := time.Parse("2006-01-02T15:04:05Z", item.Date)
+		if err != nil {
+			global.Log.Error("解析日期失败", zap.String("date", item.Date), zap.Error(err))
+			continue
+		}
+		global.Log.Info("处理统计项", zap.String("date", item.Date), zap.String("status", item.Status), zap.Int64("count", item.Count))
+		if idx, ok := dateIndex[itemDate]; ok {
+			global.Log.Info("找到匹配的日期索引", zap.String("date", item.Date), zap.Int("index", idx))
 			data.Total[idx] += item.Count
 			switch item.Status {
 			case "success":
@@ -75,9 +85,14 @@ func (s *StatsService) GetPipelineRunStatsByDate(days int) (*response.PipelineCh
 				data.Running[idx] = item.Count
 			case "pending":
 				data.Pending[idx] = item.Count
+			default:
+				continue
 			}
+		} else {
+			global.Log.Warn("未找到匹配的日期索引", zap.String("date", item.Date))
 		}
 	}
+	global.Log.Info("日期索引映射", zap.Any("dateIndex", dateIndex))
 
 	return data, nil
 }

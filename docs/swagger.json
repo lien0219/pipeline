@@ -445,6 +445,96 @@
                 }
             }
         },
+        "/build-template/build-history": {
+            "get": {
+                "description": "获取流水线构建历史记录，支持筛选、排序和分页",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "构建模板管理"
+                ],
+                "summary": "获取构建历史列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页条数",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "排序字段(id/start_time/duration)",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "排序方向(asc/desc)",
+                        "name": "sort_order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "流水线ID",
+                        "name": "pipeline_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "运行状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "开始日期(YYYY-MM-DD)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束日期(YYYY-MM-DD)",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.PageResult"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.PipelineRun"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/build-template/{id}": {
             "get": {
                 "security": [
@@ -4740,14 +4830,19 @@
                 "image": {
                     "type": "string"
                 },
+                "logs": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
                 "stage_id": {
                     "type": "integer"
                 },
+                "status": {
+                    "type": "string"
+                },
                 "timeout": {
-                    "description": "超时时间(秒)",
                     "type": "integer"
                 },
                 "updated_at": {

@@ -324,7 +324,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -427,9 +427,9 @@ const fetchArtifacts = async () => {
       pipeline_id: pipelineId,
     };
 
-    const response = await pipelineStore.getArtifacts(params);
-    artifacts.value = response.data || [];
-    artifactsPagination.total = response.total || 0;
+    const response = await pipelineApi.getArtifacts(params);
+    artifacts.value = response.data?.list || [];
+    artifactsPagination.total = response.data.total || 0;
   } catch (error) {
     console.error("Failed to fetch artifacts:", error);
     ElMessage.error("获取制品列表失败");
@@ -466,14 +466,11 @@ const viewLogs = async (runId) => {
 
   try {
     // 获取运行详情
-    const runResponse = await pipelineStore.getPipelineRunById(
-      pipelineId,
-      runId
-    );
+    const runResponse = await pipelineApi.getPipelineRunById(pipelineId, runId);
     currentRun.value = runResponse.data;
 
     // 获取日志
-    const logsResponse = await pipelineStore.getPipelineRunLogs(
+    const logsResponse = await pipelineApi.getPipelineRunLogs(
       pipelineId,
       runId
     );

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gin_pipeline/global"
 	"gin_pipeline/model"
+	"gin_pipeline/model/request"
 	"time"
 
 	"go.uber.org/zap"
@@ -333,4 +334,59 @@ func (e *KubernetesTaskExecutor) Execute(ctx context.Context, task *WorkflowTask
 		task.Logs = "Kubernetes任务执行成功\n$ kubectl apply -f deployment.yaml\ndeployment.apps/nginx created"
 		return nil
 	}
+}
+
+// GetBuildHistory 获取构建历史列表
+func (s *WorkflowService) GetBuildHistory(req request.BuildHistoryRequest) (int64, []model.PipelineRun, error) {
+	var runs []model.PipelineRun
+	query := global.DB.Model(&model.PipelineRun{})
+
+	// 筛选条件
+	if req.PipelineID != nil {
+		query = query.Where("pipeline_id = ?", req.PipelineID)
+	}
+	if req.Status != "" {
+		query = query.Where("status = ?", req.Status)
+	}
+	if req.StartDate != "" {
+		startDate, err := time.Parse("2006-01-02", req.StartDate)
+		if err == nil {
+			query = query.Where("start_time >= ?", startDate)
+		}
+	}
+	if req.EndDate != "" {
+		endDate, err := time.Parse("2006-01-02", req.EndDate)
+		if err == nil {
+			// 包含结束日期当天的所有时间
+			endDate = endDate.AddDate(0, 0, 1).Add(-time.Nanosecond)
+			query = query.Where("start_time <= ?", endDate)
+		}
+	}
+
+	// 排序处理
+	sortBy := req.SortBy
+	if sortBy == "" {
+		sortBy = "start_time"
+	}
+	sortOrder := req.SortOrder
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
+	query = query.Order(fmt.Sprintf("%s %s", sortBy, sortOrder))
+
+	// 分页处理
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return 0, nil, err
+	}
+
+	// 执行查询
+	page := req.Page
+	limit := req.Limit
+	offset := (page - 1) * limit
+	if err := query.Offset(offset).Limit(limit).Find(&runs).Error; err != nil {
+		return 0, nil, err
+	}
+
+	return total, runs, nil
 }

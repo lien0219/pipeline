@@ -30,4 +30,7 @@ export const templateApi = {
   createPipelineFromTemplate(templateId: string | number, data: any) {
     return http.post(`/v1/build-template/${templateId}/apply`, data);
   },
+  getBuildHistory(params: any) {
+    return http.get("/v1/build-template/build-history", { params });
+  },
 };

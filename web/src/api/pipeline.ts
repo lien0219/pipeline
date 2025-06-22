@@ -42,15 +42,15 @@ export const pipelineApi = {
   },
 
   getArtifacts(params: any) {
-    return http.get("/v1/artifacts", { params });
+    return http.get("/v1/artifact", { params });
   },
 
   getArtifactById(id: number | string) {
-    return http.get(`/v1/artifacts/${id}`);
+    return http.get(`/v1/artifact/${id}`);
   },
 
   deleteArtifact(id: number | string) {
-    return http.delete(`/v1/artifacts/${id}`);
+    return http.delete(`/v1/artifact/${id}`);
   },
   getDashboardStats() {
     return http.get("/v1/dashboard/stats");

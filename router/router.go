@@ -98,6 +98,7 @@ func InitBuildTemplateRouter(Router *gin.RouterGroup) {
 		BuildTemplateRouter.PUT("/:id", v1.UpdateBuildTemplate)
 		BuildTemplateRouter.DELETE("/:id", v1.DeleteBuildTemplate)
 		BuildTemplateRouter.POST("/:id/apply", v1.ApplyBuildTemplate)
+		BuildTemplateRouter.GET("/build-history", v1.GetBuildHistory)
 	}
 }
 

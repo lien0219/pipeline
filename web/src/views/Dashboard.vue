@@ -15,50 +15,78 @@
 
           <el-row :gutter="20">
             <el-col :span="6">
-              <div class="stat-card success">
+              <div
+                class="stat-card success"
+                @mouseenter="cardHover($event)"
+                @mouseleave="cardLeave($event)"
+              >
                 <div class="stat-icon">
                   <el-icon :size="24"><Check /></el-icon>
                 </div>
                 <div class="stat-info">
-                  <div class="stat-value">{{ stats.success }}</div>
+                  <div class="stat-value" :data-value="stats.success">
+                    {{ stats.success }}
+                  </div>
                   <div class="stat-label">成功</div>
                 </div>
+                <div class="stat-bg"></div>
               </div>
             </el-col>
 
             <el-col :span="6">
-              <div class="stat-card running">
+              <div
+                class="stat-card running"
+                @mouseenter="cardHover($event)"
+                @mouseleave="cardLeave($event)"
+              >
                 <div class="stat-icon">
                   <el-icon :size="24"><Loading /></el-icon>
                 </div>
                 <div class="stat-info">
-                  <div class="stat-value">{{ stats.running }}</div>
+                  <div class="stat-value" :data-value="stats.running">
+                    {{ stats.running }}
+                  </div>
                   <div class="stat-label">运行中</div>
                 </div>
+                <div class="stat-bg"></div>
               </div>
             </el-col>
 
             <el-col :span="6">
-              <div class="stat-card failed">
+              <div
+                class="stat-card failed"
+                @mouseenter="cardHover($event)"
+                @mouseleave="cardLeave($event)"
+              >
                 <div class="stat-icon">
                   <el-icon :size="24"><WarningFilled /></el-icon>
                 </div>
                 <div class="stat-info">
-                  <div class="stat-value">{{ stats.failed }}</div>
+                  <div class="stat-value" :data-value="stats.failed">
+                    {{ stats.failed }}
+                  </div>
                   <div class="stat-label">失败</div>
                 </div>
+                <div class="stat-bg"></div>
               </div>
             </el-col>
 
             <el-col :span="6">
-              <div class="stat-card pending">
+              <div
+                class="stat-card pending"
+                @mouseenter="cardHover($event)"
+                @mouseleave="cardLeave($event)"
+              >
                 <div class="stat-icon">
                   <el-icon :size="24"><Clock /></el-icon>
                 </div>
                 <div class="stat-info">
-                  <div class="stat-value">{{ stats.pending }}</div>
+                  <div class="stat-value" :data-value="stats.pending">
+                    {{ stats.pending }}
+                  </div>
                   <div class="stat-label">等待中</div>
                 </div>
+                <div class="stat-bg"></div>
               </div>
             </el-col>
           </el-row>
@@ -265,6 +293,7 @@ const fetchData = async () => {
 
     const chartData = chartDataResponse.data;
     initChart(chartData);
+    setTimeout(startValueAnimation, 100);
   } catch (error) {
     console.error("Failed to fetch dashboard data:", error);
   } finally {
@@ -274,6 +303,10 @@ const fetchData = async () => {
 
 // 初始化图表
 const initChart = (chartData) => {
+  if (!chartData || !Array.isArray(chartData.dates)) {
+    console.error("Invalid chartData structure:", chartData);
+    return;
+  }
   if (!pipelineChart.value) return;
 
   if (chart.value) {
@@ -312,7 +345,7 @@ const initChart = (chartData) => {
     xAxis: {
       type: "category",
       boundaryGap: false,
-      data: chartData.dates,
+      data: chartData.dates || [],
       axisLine: {
         lineStyle: {
           color: "#8392A5",
@@ -362,7 +395,7 @@ const initChart = (chartData) => {
             },
           ]),
         },
-        data: chartData.success,
+        data: chartData.success || [],
         animationDelay: (idx) => idx * 100,
       },
       {
@@ -388,7 +421,7 @@ const initChart = (chartData) => {
             },
           ]),
         },
-        data: chartData.failed,
+        data: chartData.failed || [],
         animationDelay: (idx) => idx * 100 + 100,
       },
       {
@@ -414,7 +447,7 @@ const initChart = (chartData) => {
             },
           ]),
         },
-        data: chartData.total,
+        data: chartData.total || [],
         animationDelay: (idx) => idx * 100 + 200,
       },
     ],
@@ -514,6 +547,38 @@ onUnmounted(() => {
     chart.value = null;
   }
 });
+
+const cardHover = (e) => {
+  e.currentTarget.classList.add("hover");
+};
+
+const cardLeave = (e) => {
+  e.currentTarget.classList.remove("hover");
+};
+
+// 数字增长动画
+const animateValue = (el, start, end, duration) => {
+  let startTimestamp = null;
+  const step = (timestamp) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+    el.innerText = Math.floor(progress * (end - start) + start);
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    }
+  };
+  window.requestAnimationFrame(step);
+};
+
+// 在数据加载后执行数字动画
+const startValueAnimation = () => {
+  document.querySelectorAll(".stat-value").forEach((el) => {
+    const value = parseInt(el.dataset.value);
+    if (!isNaN(value)) {
+      animateValue(el, 0, value, 1500);
+    }
+  });
+};
 </script>
 
 <style scoped>
@@ -533,25 +598,138 @@ onUnmounted(() => {
 .stat-card {
   display: flex;
   align-items: center;
-  padding: 15px;
-  border-radius: 4px;
+  padding: 20px;
+  border-radius: 12px;
   margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  z-index: -1;
+  filter: blur(8px);
+  opacity: 0.7;
+  transform: scale(0.95);
+}
+
+.stat-card.hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
 }
 
 .stat-card.success {
-  background-color: rgba(103, 194, 58, 0.1);
+  background: linear-gradient(
+    135deg,
+    rgba(103, 194, 58, 0.2),
+    rgba(103, 194, 58, 0.05)
+  );
 }
 
 .stat-card.running {
-  background-color: rgba(64, 158, 255, 0.1);
+  background: linear-gradient(
+    135deg,
+    rgba(64, 158, 255, 0.2),
+    rgba(64, 158, 255, 0.05)
+  );
 }
 
 .stat-card.failed {
-  background-color: rgba(245, 108, 108, 0.1);
+  background: linear-gradient(
+    135deg,
+    rgba(245, 108, 108, 0.2),
+    rgba(245, 108, 108, 0.05)
+  );
 }
 
 .stat-card.pending {
-  background-color: rgba(144, 147, 153, 0.1);
+  background: linear-gradient(
+    135deg,
+    rgba(144, 147, 153, 0.2),
+    rgba(144, 147, 153, 0.05)
+  );
+}
+
+.stat-icon {
+  margin-right: 15px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stat-card.hover .stat-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.stat-info {
+  flex: 1;
+  position: relative;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 5px;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(90deg, #fff, #e0e0e0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: #000 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60px;
+  height: 60px;
+  opacity: 0.1;
+}
+
+.stat-card.success .stat-bg {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2367c23a' d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E")
+    no-repeat center;
+  background-size: contain;
+}
+
+.stat-card.running .stat-bg {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23409eff' d='M15.07 1.01h-6v2h6v-2zm-4 13h2v-6h-2v6zm8.03-6.62l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.14 4.74 14.19 4 12.07 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.11-.74-4.06-1.97-5.61z'/%3E%3C/svg%3E")
+    no-repeat center;
+  background-size: contain;
+}
+
+.stat-card.failed .stat-bg {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23f56c6c' d='M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z'/%3E%3C/svg%3E")
+    no-repeat center;
+  background-size: contain;
+}
+
+.stat-card.pending .stat-bg {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23909399' d='M12 22C6.47 22 2 17.53 2 12S6.47 2 12 2s10 4.47 10 10-4.47 10-10 10zm0-18c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8zm.5 13H11v-6h1.5v6zm0-8H11V7h1.5v2z'/%3E%3C/svg%3E")
+    no-repeat center;
+  background-size: contain;
 }
 
 .stat-icon {

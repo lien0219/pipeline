@@ -5,6 +5,8 @@ import (
 	"gin_pipeline/model"
 	"gin_pipeline/model/request"
 	"gin_pipeline/model/response"
+	"gin_pipeline/service"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -462,4 +464,49 @@ func ApplyBuildTemplate(c *gin.Context) {
 	}
 
 	response.OkWithData(pipeline, c)
+}
+
+// GetBuildHistory 获取构建历史列表
+// @Summary 获取构建历史列表
+// @Description 获取流水线构建历史记录，支持筛选、排序和分页
+// @Tags 构建模板管理
+// @Accept json
+// @Produce json
+// @Param page query int true "页码"
+// @Param limit query int true "每页条数"
+// @Param sort_by query string false "排序字段(id/start_time/duration)"
+// @Param sort_order query string false "排序方向(asc/desc)"
+// @Param pipeline_id query uint false "流水线ID"
+// @Param status query string false "运行状态"
+// @Param start_date query string false "开始日期(YYYY-MM-DD)"
+// @Param end_date query string false "结束日期(YYYY-MM-DD)"
+// @Success 200 {object} response.PageResult{data=[]model.PipelineRun}
+// @Router /build-template/build-history [get]
+func GetBuildHistory(c *gin.Context) {
+	var req request.BuildHistoryRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		response.FailWithMessage("参数验证失败", c)
+		return
+	}
+
+	// 默认排序
+	if req.SortBy == "" {
+		req.SortBy = "start_time"
+		req.SortOrder = "desc"
+	}
+
+	// 创建工作流服务实例并调用方法
+	workflowService := service.NewWorkflowService()
+	total, list, err := workflowService.GetBuildHistory(req)
+	if err != nil {
+		response.FailWithMessage("获取构建历史失败", c)
+		return
+	}
+
+	response.OkWithDetailed(response.PageResult{
+		List:     list,
+		Total:    total,
+		Page:     req.Page,
+		PageSize: req.Limit,
+	}, "获取成功", c)
 }

@@ -33,6 +33,12 @@ const routes = [
         meta: { requiresAuth: true, title: "流水线详情" },
       },
       {
+        path: "pipelines/:id/runs/:runId",
+        name: "PipelineRunDetail",
+        component: () => import("@/views/pipeline/PipelineRunDetail.vue"),
+        meta: { requiresAuth: true, title: "流水线运行详情" },
+      },
+      {
         path: "pipeline/create",
         name: "PipelineCreate",
         component: () => import("@/views/pipeline/PipelineCreate.vue"),
