@@ -35,7 +35,12 @@ export const dagApi = {
   // 更新DAG
   update: (
     id: number,
-    data: { name?: string; description?: string; nodes?: any[] }
+    data: {
+      name?: string;
+      description?: string;
+      nodes?: any[];
+      pipeline_id?: number;
+    }
   ) => http.put(`/v1/dag/${id}`, data),
 
   // 删除DAG

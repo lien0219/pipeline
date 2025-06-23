@@ -15,6 +15,7 @@ type UpdateDAG struct {
 	Name        string          `json:"name" binding:"required,min=2,max=100"`
 	Description string          `json:"description"`
 	Nodes       []model.DAGNode `json:"nodes" binding:"required"`
+	PipelineID  uint            `json:"pipeline_id"`
 }
 
 // ValidateDAG 验证DAG请求参数

@@ -400,7 +400,7 @@ const fetchPipelines = async () => {
       page: 1,
       pageSize: 10,
     });
-    pipelines.value = response.data || [];
+    pipelines.value = response.data.list || [];
   } catch (error) {
     console.error("Failed to fetch pipelines:", error);
   }
@@ -608,8 +608,10 @@ const applyTemplate = async () => {
       };
 
       const response = await templateApi.createPipelineFromTemplate(
+        selectedTemplate.value.id,
         pipelineData
       );
+
       ElMessage.success("流水线创建成功");
       useTemplateDialogVisible.value = false;
 
@@ -617,10 +619,9 @@ const applyTemplate = async () => {
       router.push(`/pipelines/${response.data.id}`);
     } else {
       // 更新现有流水线
-      await pipelineStore.applyTemplateToExistingPipeline(
-        useTemplateForm.pipeline_id,
-        selectedTemplate.value.id
-      );
+      await templateApi.createPipelineFromTemplate(selectedTemplate.value.id, {
+        pipeline_id: useTemplateForm.pipeline_id,
+      });
       ElMessage.success("模板应用成功");
       useTemplateDialogVisible.value = false;
     }

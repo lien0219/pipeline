@@ -186,6 +186,7 @@ func UpdateDAG(c *gin.Context) {
 		"name":        req.Name,
 		"description": req.Description,
 		"nodes_data":  req.Nodes,
+		"pipeline_id": req.PipelineID,
 	}
 
 	if err := dagService.UpdateDAG(uint(id), updates); err != nil {

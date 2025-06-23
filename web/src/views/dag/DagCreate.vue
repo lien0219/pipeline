@@ -83,7 +83,7 @@ const formRules = ref({
     { required: true, message: "请输入DAG名称", trigger: "blur" },
     { min: 1, max: 50, message: "名称长度在1到50个字符", trigger: "blur" },
   ],
-  PipelineID: [
+  pipeline_id: [
     { required: true, message: "请输入所属流水线ID", trigger: "blur" },
     { type: "number", message: "必须是数字", trigger: "blur" },
   ],
