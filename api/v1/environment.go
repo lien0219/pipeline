@@ -6,6 +6,7 @@ import (
 	"gin_pipeline/model"
 	"gin_pipeline/model/request"
 	"gin_pipeline/model/response"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -110,6 +111,7 @@ func GetEnvironments(c *gin.Context) {
 	// 获取筛选参数
 	name := c.Query("name")
 	envType := c.Query("type")
+	status := c.Query("status")
 
 	// 构建查询条件
 	db := global.DB.Model(&model.Environment{})
@@ -120,6 +122,9 @@ func GetEnvironments(c *gin.Context) {
 
 	if envType != "" {
 		db = db.Where("type = ?", envType)
+	}
+	if status != "" {
+		db = db.Where("status = ?", status)
 	}
 
 	// 查询总数

@@ -22,5 +22,5 @@ type UpdateEnvironment struct {
 	URL         string                `json:"url"`
 	Description string                `json:"description"`
 	Status      string                `json:"status"`
-	Variables   []EnvironmentVariable `json:"variables"`
+	Variables   []EnvironmentVariable `json:"variables" binding:"omitempty"`
 }

@@ -3,7 +3,6 @@
     <div class="page-header">
       <div class="header-title">
         <h2>发布管理</h2>
-        <p>管理应用程序的发布版本</p>
       </div>
 
       <div class="header-actions">
@@ -17,7 +16,7 @@
     <el-card>
       <div class="filter-container">
         <el-form :inline="true" :model="filterForm" class="filter-form">
-          <el-form-item label="环境">
+          <el-form-item label="环境" style="width: 200px">
             <el-select
               v-model="filterForm.environment"
               placeholder="全部环境"
@@ -30,7 +29,7 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="状态">
+          <el-form-item label="状态" style="width: 200px">
             <el-select
               v-model="filterForm.status"
               placeholder="全部状态"
