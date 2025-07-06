@@ -3084,6 +3084,210 @@ const docTemplate = `{
                 }
             }
         },
+        "/settings": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "获取系统配置",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "配置类型(basic,email,integration,system,all)",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"获取成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "保存系统配置",
+                "parameters": [
+                    {
+                        "description": "配置类型和配置项",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.SaveSettingsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"success\":true,\"data\":{},\"msg\":\"保存成功\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/system/logs": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统维护"
+                ],
+                "summary": "获取日志文件列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.LogFile"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/system/logs/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "获取日志内容",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "日志文件名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "起始行号，默认0",
+                        "name": "startLine",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "获取行数，默认100",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/system/status": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统维护"
+                ],
+                "summary": "获取系统状态",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/service.SystemStatus"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/template-market/category": {
             "get": {
                 "security": [
@@ -4764,6 +4968,9 @@ const docTemplate = `{
                         }
                     ]
                 },
+                "timeout": {
+                    "type": "integer"
+                },
                 "type": {
                     "description": "task, condition, parallel, etc.",
                     "type": "string"
@@ -5948,6 +6155,30 @@ const docTemplate = `{
                 }
             }
         },
+        "request.SaveSettingsRequest": {
+            "type": "object",
+            "required": [
+                "items",
+                "type"
+            ],
+            "properties": {
+                "items": {
+                    "description": "配置项",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "type": {
+                    "description": "配置类型",
+                    "type": "string",
+                    "enum": [
+                        "basic",
+                        "email",
+                        "integration",
+                        "system"
+                    ]
+                }
+            }
+        },
         "request.Stage": {
             "type": "object",
             "required": [
@@ -6028,6 +6259,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.DAGNode"
                     }
+                },
+                "pipeline_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -6310,6 +6544,43 @@ const docTemplate = `{
                 },
                 "data": {},
                 "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.LogFile": {
+            "type": "object",
+            "properties": {
+                "modified": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.SystemStatus": {
+            "type": "object",
+            "properties": {
+                "active_users": {
+                    "type": "integer"
+                },
+                "cpu_usage": {
+                    "type": "string"
+                },
+                "db_connections": {
+                    "type": "integer"
+                },
+                "disk_usage": {
+                    "type": "string"
+                },
+                "memory_usage": {
+                    "type": "string"
+                },
+                "uptime": {
                     "type": "string"
                 }
             }

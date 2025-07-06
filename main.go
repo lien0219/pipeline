@@ -65,6 +65,8 @@ func main() {
 	// 启动队列处理函数
 	service.ProcessResourceRequests()
 
+	global.StartTime = time.Now()
+
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<测试
 	// 创建一个资源请求实例
 	request := model.TenantResourceRequest{

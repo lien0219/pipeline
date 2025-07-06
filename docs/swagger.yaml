@@ -144,6 +144,8 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.JSONMap'
         description: 手动指定数据库类型为 JSON
+      timeout:
+        type: integer
       type:
         description: task, condition, parallel, etc.
         type: string
@@ -954,6 +956,24 @@ definitions:
     - password
     - username
     type: object
+  request.SaveSettingsRequest:
+    properties:
+      items:
+        additionalProperties: true
+        description: 配置项
+        type: object
+      type:
+        description: 配置类型
+        enum:
+        - basic
+        - email
+        - integration
+        - system
+        type: string
+    required:
+    - items
+    - type
+    type: object
   request.Stage:
     properties:
       description:
@@ -1007,6 +1027,8 @@ definitions:
         items:
           $ref: '#/definitions/model.DAGNode'
         type: array
+      pipeline_id:
+        type: integer
     required:
     - name
     - nodes
@@ -1203,6 +1225,30 @@ definitions:
         type: integer
       data: {}
       msg:
+        type: string
+    type: object
+  service.LogFile:
+    properties:
+      modified:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
+    type: object
+  service.SystemStatus:
+    properties:
+      active_users:
+        type: integer
+      cpu_usage:
+        type: string
+      db_connections:
+        type: integer
+      disk_usage:
+        type: string
+      memory_usage:
+        type: string
+      uptime:
         type: string
     type: object
 host: localhost:8080
@@ -3023,6 +3069,123 @@ paths:
       summary: 获取所有资源请求
       tags:
       - 资源请求管理
+  /settings:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 配置类型(basic,email,integration,system,all)
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"获取成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 获取系统配置
+      tags:
+      - 系统设置
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 配置类型和配置项
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.SaveSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"success":true,"data":{},"msg":"保存成功"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: 保存系统配置
+      tags:
+      - 系统设置
+  /system/logs:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.LogFile'
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取日志文件列表
+      tags:
+      - 系统维护
+  /system/logs/{name}:
+    get:
+      parameters:
+      - description: 日志文件名
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 起始行号，默认0
+        in: query
+        name: startLine
+        type: integer
+      - description: 获取行数，默认100
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取日志内容
+      tags:
+      - System
+  /system/status:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.SystemStatus'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取系统状态
+      tags:
+      - 系统维护
   /template-market/category:
     get:
       consumes:

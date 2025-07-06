@@ -278,3 +278,22 @@ func InitDashboardRouter(Router *gin.RouterGroup) {
 		DashboardRouter.POST("/activities", v1.GetRecentActivities)
 	}
 }
+
+// InitSettingRouter 系统配置路由
+func InitSettingRouter(Router *gin.RouterGroup) {
+	SettingRouter := Router.Group("/settings").Use(middleware.JWTAuth())
+	{
+		SettingRouter.POST("", v1.SaveSettings)
+		SettingRouter.GET("", v1.GetSettings)
+	}
+}
+
+// InitSystemRouter 初始化系统维护路由
+func InitSystemRouter(Router *gin.RouterGroup) {
+	SystemRouter := Router.Group("/system").Use(middleware.JWTAuth())
+	{
+		SystemRouter.GET("/status", v1.GetSystemStatus)
+		SystemRouter.GET("/logs", v1.GetLogFiles)
+		SystemRouter.GET("/logs/:name", v1.GetLogContent)
+	}
+}
