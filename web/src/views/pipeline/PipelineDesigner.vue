@@ -23,9 +23,10 @@
       <svg
         class="dag-edges"
         :style="{ width: `${canvasWidth}px`, height: `${canvasHeight}px` }"
+        v-if="currentDAG"
       >
         <path
-          v-for="(edge, idx) in currentDAG.edges"
+          v-for="(edge, idx) in currentDAG.edges || []"
           :key="idx"
           :d="getEdgePath(edge)"
           stroke="#3b82f6"
@@ -33,7 +34,7 @@
           fill="none"
         />
         <path
-          v-for="(tempEdge, idx) in tempEdges"
+          v-for="(tempEdge, idx) in tempEdges || []"
           :key="`temp-${idx}`"
           :d="getEdgePath(tempEdge)"
           stroke="#9ca3af"
@@ -49,11 +50,12 @@
       >
         <div
           v-for="node in currentDAG.nodes"
-          :key="node.id"
+          :key="node?.id"
           :style="{ left: `${node.position.x}px`, top: `${node.position.y}px` }"
           class="dag-node"
           :class="{ selected: node.id === selectedNodeId }"
           @mousedown="handleNodeMouseDown(node)"
+          @click.stop="selectNode(node.id)"
         >
           <div class="node-header">
             {{ node.type.label }}
@@ -86,14 +88,22 @@
       <h3>节点属性</h3>
       <el-form :model="selectedNode" label-width="80px">
         <el-form-item label="名称">
-          <el-input v-model="selectedNode.name" />
+          <el-input
+            v-model="selectedNode.name"
+            placeholder="请输入节点名称（必填，不超过50字符）"
+          />
         </el-form-item>
         <el-form-item label="超时时间">
           <el-input-number v-model="selectedNode.timeout" min="0" />
         </el-form-item>
-        <el-form-item v-if="selectedNode.type === 'task'">
+        <el-form-item v-if="selectedNode.type === 'shell'">
           <label>脚本内容</label>
-          <el-input type="textarea" v-model="selectedNode.script" />
+          <el-input
+            :rows="10"
+            type="textarea"
+            v-model="selectedNode.script"
+            :placeholder="placeholderJson"
+          />
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="saveDAG">保存配置</el-button>
@@ -105,11 +115,17 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { pipelineApi } from "@/api/pipeline";
+import { dagApi } from "@/api/dag";
 import { DAG, DAGNode, NodeType, DAGEdge } from "@/types/dag";
 import { ElMessage } from "element-plus";
 
 const nodeTypes: NodeType[] = [
-  { type: "task", label: "任务节点", acceptsInput: true, providesOutput: true },
+  {
+    type: "shell",
+    label: "任务节点",
+    acceptsInput: true,
+    providesOutput: true,
+  },
   {
     type: "condition",
     label: "条件节点",
@@ -129,7 +145,23 @@ const nodeTypes: NodeType[] = [
     providesOutput: false,
   },
 ];
-
+const placeholderJson = JSON.stringify(
+  {
+    nodes: [
+      {
+        id: "node-123456",
+        type: "task",
+        name: "任务节点-1",
+        position: { x: 100, y: 200 },
+        timeout: 300,
+        script: "echo 'hello world'",
+      },
+    ],
+    edges: [],
+  },
+  null,
+  2
+);
 const router = useRouter();
 const route = useRoute();
 const pipelineId = route.params.id as string;
@@ -149,12 +181,24 @@ const selectedNode = computed(() => {
   return targetNode;
 });
 
+const selectNode = (nodeId) => {
+  selectedNodeId.value = nodeId;
+};
+
 onMounted(async () => {
   try {
     const res = await pipelineApi.getDAGByPipelineID(pipelineId);
-    currentDAG.value = res.data;
+    if (
+      res.data &&
+      (Array.isArray(res.data) ? res.data.length > 0 : res.data)
+    ) {
+      currentDAG.value = Array.isArray(res.data) ? res.data[0] : res.data;
+    } else {
+      currentDAG.value = { nodes: [], edges: [] };
+    }
   } catch (error) {
-    ElMessage.error("加载DAG失败");
+    ElMessage.error("加载DAG失败，将创建新DAG");
+    currentDAG.value = { nodes: [], edges: [] };
   }
 });
 
@@ -175,7 +219,7 @@ const handleCanvasDrop = (e: DragEvent) => {
     id: `node-${Date.now()}`,
     type: dragType.type,
     name: `${dragType.label}-${currentDAG.value.nodes.length + 1}`,
-    position: { x, y },
+    position: { x: x || 0, y: y || 0 },
     timeout: 300,
     script: "",
   });
@@ -247,8 +291,13 @@ const handlePortMouseDown = (port: "in" | "out", node: DAGNode) => {
 };
 
 const getEdgePath = (edge: DAGEdge) => {
-  const startNode = currentDAG.value.nodes.find((n) => n.id === edge.source)!;
-  const endNode = currentDAG.value.nodes.find((n) => n.id === edge.target)!;
+  const startNode = currentDAG.value.nodes?.find((n) => n.id === edge.source);
+  const endNode = currentDAG.value.nodes?.find((n) => n.id === edge.target);
+
+  if (!startNode || !endNode || !startNode.position || !endNode.position) {
+    return "";
+  }
+
   const startX = startNode.position.x + 150;
   const startY = startNode.position.y + 12;
   const endX = endNode.position.x;
@@ -270,10 +319,24 @@ const deleteNode = (nodeId: string) => {
 
 const saveDAG = async () => {
   try {
-    await pipelineApi.updateDAG(pipelineId, currentDAG.value[0]);
-    ElMessage.success("DAG保存成功");
+    if (!currentDAG.value.nodes || currentDAG.value.nodes.length === 0) {
+      ElMessage.warning("请至少添加一个节点");
+      return;
+    }
+    const payload = {
+      name: `pipeline-${pipelineId}-dag`,
+      pipeline_id: Number(pipelineId),
+      ...currentDAG.value,
+    };
+    if (currentDAG.value.id) {
+      await pipelineApi.updateDAG(currentDAG.value.id, payload);
+      ElMessage.success("DAG更新成功");
+    } else {
+      await dagApi.create(payload);
+      ElMessage.success("DAG创建成功");
+    }
   } catch (error) {
-    ElMessage.error("DAG保存失败");
+    ElMessage.error(`操作失败: ${(error as Error).message}`);
   }
 };
 

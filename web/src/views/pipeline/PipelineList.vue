@@ -123,9 +123,14 @@
             >
               详情
             </el-button>
-
+            <el-button type="text" @click="handleDesign(row)">设计</el-button>
             <el-dropdown>
-              <el-button link type="primary" size="small">
+              <el-button
+                link
+                type="primary"
+                size="small"
+                style="margin-top: 7px; margin-left: 10px"
+              >
                 更多<el-icon class="el-icon--right"><ArrowDown /></el-icon>
               </el-button>
               <template #dropdown>
@@ -170,6 +175,7 @@ import { usePipelineStore } from "@/stores/pipeline";
 import { Plus, Search, RefreshRight, ArrowDown } from "@element-plus/icons-vue";
 import dayjs from "dayjs";
 
+const router = useRouter();
 const pipelineStore = usePipelineStore();
 const loading = ref(false);
 const pipelines = ref([]);
@@ -330,7 +336,9 @@ const getStatusText = (status) => {
 const formatDate = (date) => {
   return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 };
-
+const handleDesign = (row) => {
+  router.push(`/pipelines/${row.id}/designer`);
+};
 onMounted(() => {
   fetchPipelines();
 });

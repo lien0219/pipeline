@@ -81,10 +81,22 @@ const routes = [
         meta: { requiresAuth: true, title: "发布记录" },
       },
       {
+        path: "/deploy/releases/:id",
+        name: "ReleaseDetail",
+        component: () => import("@/views/deploy/ReleaseDetail.vue"),
+        meta: { requiresAuth: true, title: "发布详情" },
+      },
+      {
         path: "artifacts",
         name: "Artifacts",
         component: () => import("@/views/artifact/ArtifactList.vue"),
         meta: { requiresAuth: true, title: "制品管理" },
+      },
+      {
+        path: "/artifacts/:id",
+        name: "ArtifactDetail",
+        component: () => import("@/views/artifact/ArtifactDetail.vue"),
+        meta: { requiresAuth: true, title: "制品详情" },
       },
       {
         path: "dags",

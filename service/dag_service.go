@@ -182,10 +182,9 @@ func (s *DAGService) ValidateDAG(nodes []model.DAGNode) error {
 		nodeMap[node.ID] = node
 	}
 
-	// 输出 nodeMap 中的节点 ID，用于调试
+	// 输出 nodeMap 中的节点 ID 调试
 	global.Log.Info("ValidateDAG 节点映射中的节点 ID", zap.Any("nodeIDs", getKeys(nodeMap)))
 
-	// 检查所有依赖是否存在
 	for _, node := range nodes {
 		for _, depID := range node.Dependencies {
 			if _, exists := nodeMap[depID.(string)]; !exists {
@@ -194,7 +193,14 @@ func (s *DAGService) ValidateDAG(nodes []model.DAGNode) error {
 		}
 	}
 	// 验证任务类型是否有效
-	validTypes := map[string]bool{"shell": true, "docker": true, "kubernetes": true}
+	validTypes := map[string]bool{
+		"shell":      true,
+		"docker":     true,
+		"kubernetes": true,
+		"condition":  true,
+		"parallel":   true,
+		"approval":   true,
+	}
 	for _, node := range nodes {
 		if node.Type == "" {
 			return errors.New("节点类型不能为空: " + node.ID)

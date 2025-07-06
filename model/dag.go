@@ -17,6 +17,7 @@ type DAGNode struct {
 	Config       JSONMap   `json:"config" gorm:"type:json"`       // 手动指定数据库类型为 JSON
 	Dependencies JSONArray `json:"dependencies" gorm:"type:json"` // 修改为 JSON 类型
 	Position     JSONMap   `json:"position" gorm:"type:json"`     // 手动指定数据库类型为 JSON
+	Timeout      int       `json:"timeout"`
 }
 
 // TableName 设置 DAGNode 的表名

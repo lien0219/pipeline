@@ -67,7 +67,11 @@
         </el-form>
       </div>
 
-      <el-table :data="releases" style="width: 100%" v-loading="loading">
+      <el-table
+        :data="releaseStore.releases"
+        style="width: 100%"
+        v-loading="releaseStore.loading"
+      >
         <el-table-column prop="version" label="版本" width="120" />
 
         <el-table-column prop="environment" label="环境" width="120">
@@ -153,7 +157,7 @@
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
           :page-sizes="[10, 20, 30, 50]"
-          :total="pagination.total"
+          :total="releaseStore.total"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -223,7 +227,11 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm" :loading="submitting">
+          <el-button
+            type="primary"
+            @click="submitForm"
+            :loading="releaseStore.submitting"
+          >
             创建并部署
           </el-button>
         </span>
@@ -237,79 +245,14 @@ import { ref, reactive, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Plus, Search, RefreshRight } from "@element-plus/icons-vue";
 import dayjs from "dayjs";
+import { useReleaseStore } from "@/stores/release";
+import { useRouter } from "vue-router";
 
-// 模拟数据，实际项目中应该从API获取
-const releases = ref([
-  {
-    id: 1,
-    version: "v1.0.0",
-    environment: "production",
-    status: "success",
-    description: "初始版本发布",
-    artifact: "app-v1.0.0.zip",
-    artifact_id: 101,
-    deployed_by: "admin",
-    deployed_at: "2023-05-10T09:00:00",
-    is_rollback: false,
-  },
-  {
-    id: 2,
-    version: "v1.1.0",
-    environment: "production",
-    status: "success",
-    description: "新增功能和bug修复",
-    artifact: "app-v1.1.0.zip",
-    artifact_id: 102,
-    deployed_by: "admin",
-    deployed_at: "2023-05-15T10:30:00",
-    is_rollback: false,
-  },
-  {
-    id: 3,
-    version: "v1.1.1",
-    environment: "production",
-    status: "failed",
-    description: "修复v1.1.0中的关键bug",
-    artifact: "app-v1.1.1.zip",
-    artifact_id: 103,
-    deployed_by: "admin",
-    deployed_at: "2023-05-16T14:20:00",
-    is_rollback: false,
-  },
-  {
-    id: 4,
-    version: "v1.1.0-rollback",
-    environment: "production",
-    status: "success",
-    description: "回滚到v1.1.0版本",
-    artifact: "app-v1.1.0.zip",
-    artifact_id: 102,
-    deployed_by: "admin",
-    deployed_at: "2023-05-16T15:00:00",
-    is_rollback: true,
-  },
-  {
-    id: 5,
-    version: "v1.2.0",
-    environment: "staging",
-    status: "in_progress",
-    description: "新版本测试",
-    artifact: "app-v1.2.0.zip",
-    artifact_id: 104,
-    deployed_by: "admin",
-    deployed_at: "2023-05-18T11:45:00",
-    is_rollback: false,
-  },
-]);
+const releaseStore = useReleaseStore();
+const router = useRouter();
 
-// 模拟制品数据
-const artifacts = ref([
-  { id: 101, name: "app-v1.0.0.zip" },
-  { id: 102, name: "app-v1.1.0.zip" },
-  { id: 103, name: "app-v1.1.1.zip" },
-  { id: 104, name: "app-v1.2.0.zip" },
-]);
-
+const releases = ref([]);
+const artifacts = ref([]);
 const loading = ref(false);
 const dialogVisible = ref(false);
 const submitting = ref(false);
@@ -326,7 +269,7 @@ const filterForm = reactive({
 const pagination = reactive({
   currentPage: 1,
   pageSize: 10,
-  total: releases.value.length,
+  total: 0,
 });
 
 // 发布表单
@@ -358,7 +301,6 @@ const rules = {
 
 // 创建发布
 const createRelease = () => {
-  // 重置表单
   Object.assign(releaseForm, {
     version: "",
     environment: "",
@@ -366,20 +308,17 @@ const createRelease = () => {
     description: "",
     release_notes: "",
   });
-
   dialogVisible.value = true;
 };
 
 // 查看发布详情
 const viewRelease = (id) => {
-  // 实际项目中应该跳转到发布详情页或打开详情对话框
-  console.log("查看发布详情:", id);
+  router.push(`/deploy/releases/${id}`);
 };
 
 // 查看制品
 const viewArtifact = (id) => {
-  // 实际项目中应该跳转到制品详情页
-  console.log("查看制品:", id);
+  router.push(`/artifacts/${id}`);
 };
 
 // 回滚发布
@@ -390,34 +329,7 @@ const rollbackRelease = async (id) => {
       cancelButtonText: "取消",
       type: "warning",
     });
-
-    // 实际项目中应该调用API回滚发布
-    const release = releases.value.find((r) => r.id === id);
-    if (release) {
-      const newId = Math.max(...releases.value.map((r) => r.id)) + 1;
-      releases.value.push({
-        id: newId,
-        version: `${release.version}-rollback`,
-        environment: release.environment,
-        status: "in_progress",
-        description: `回滚到${release.version}版本`,
-        artifact: release.artifact,
-        artifact_id: release.artifact_id,
-        deployed_by: "admin",
-        deployed_at: new Date().toISOString(),
-        is_rollback: true,
-      });
-
-      // 模拟异步操作
-      setTimeout(() => {
-        const index = releases.value.findIndex((r) => r.id === newId);
-        if (index !== -1) {
-          releases.value[index].status = "success";
-        }
-      }, 2000);
-
-      ElMessage.success("发布回滚已开始");
-    }
+    await releaseStore.rollbackRelease(id);
   } catch (error) {
     if (error !== "cancel") {
       console.error("回滚发布失败:", error);
@@ -431,16 +343,9 @@ const deleteRelease = async (id) => {
     await ElMessageBox.confirm(
       "确定要删除此发布记录吗？此操作不可恢复。",
       "删除确认",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }
+      { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
     );
-
-    // 实际项目中应该调用API删除发布
-    releases.value = releases.value.filter((r) => r.id !== id);
-    ElMessage.success("发布记录已删除");
+    await releaseStore.deleteRelease(id);
   } catch (error) {
     if (error !== "cancel") {
       console.error("删除发布失败:", error);
@@ -450,27 +355,33 @@ const deleteRelease = async (id) => {
 
 // 筛选
 const handleFilter = () => {
-  // 实际项目中应该调用API获取筛选后的数据
-  console.log("筛选条件:", filterForm);
+  releaseStore.setFilters({
+    environment: filterForm.environment,
+    status: filterForm.status,
+    dateRange: filterForm.dateRange,
+  });
 };
-
 // 重置筛选
 const resetFilter = () => {
   filterForm.environment = "";
   filterForm.status = "";
   filterForm.dateRange = [];
-  // 实际项目中应该重新获取数据
+  releaseStore.setFilters({
+    environment: "",
+    status: "",
+    dateRange: [],
+  });
 };
 
 // 分页处理
 const handleSizeChange = (size) => {
   pagination.pageSize = size;
-  // 实际项目中应该重新获取数据
+  releaseStore.setPageParams(1, size);
 };
 
 const handleCurrentChange = (page) => {
   pagination.currentPage = page;
-  // 实际项目中应该重新获取数据
+  releaseStore.setPageParams(page, pagination.pageSize);
 };
 
 // 提交表单
@@ -479,51 +390,13 @@ const submitForm = async () => {
 
   await releaseFormRef.value.validate(async (valid) => {
     if (valid) {
-      submitting.value = true;
-
       try {
-        // 实际项目中应该调用API创建发布
-        const artifact = artifacts.value.find(
-          (a) => a.id === releaseForm.artifact_id
-        );
-        const newId = Math.max(...releases.value.map((r) => r.id)) + 1;
-
-        releases.value.push({
-          id: newId,
-          version: releaseForm.version,
-          environment: releaseForm.environment,
-          status: "in_progress",
-          description: releaseForm.description,
-          artifact: artifact ? artifact.name : "",
-          artifact_id: releaseForm.artifact_id,
-          deployed_by: "admin",
-          deployed_at: new Date().toISOString(),
-          is_rollback: false,
-        });
-
-        // 模拟异步操作
-        setTimeout(() => {
-          const index = releases.value.findIndex((r) => r.id === newId);
-          if (index !== -1) {
-            releases.value[index].status = "success";
-          }
-        }, 3000);
-
-        ElMessage.success("发布已创建并开始部署");
+        await releaseStore.createRelease(releaseForm);
         dialogVisible.value = false;
-      } catch (error) {
-        console.error("创建发布失败:", error);
-        ElMessage.error("创建发布失败");
-      } finally {
-        submitting.value = false;
-      }
-    } else {
-      ElMessage.warning("请填写必填项");
-      return false;
+      } catch (error) {}
     }
   });
 };
-
 // 获取环境类型样式
 const getEnvironmentType = (environment) => {
   switch (environment) {
@@ -594,8 +467,13 @@ const formatDate = (date) => {
   return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 };
 
-onMounted(() => {
-  // 实际项目中应该从API获取发布列表和制品列表
+onMounted(async () => {
+  await Promise.all([
+    releaseStore.fetchReleases(),
+    releaseStore.fetchArtifacts(),
+  ]);
+  pagination.total = releaseStore.total;
+  artifacts.value = releaseStore.artifacts;
 });
 </script>
 
