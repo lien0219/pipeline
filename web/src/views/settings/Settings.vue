@@ -421,11 +421,12 @@
               <el-table-column prop="modified" label="修改时间" width="180" />
               <el-table-column label="操作" width="200" fixed="right">
                 <template #default="{ row }">
+                  <!-- 文件内容较多，后续优化 -->
                   <el-button
                     link
                     type="primary"
                     size="small"
-                    @click="downloadLog(row.name)"
+                    @click="downloadLogHand(row.name)"
                   >
                     下载
                   </el-button>
@@ -516,7 +517,12 @@ import {
 // @ts-ignore
 import { getSettings, saveSettings } from "@/api/settings";
 // @ts-ignore
-import { getSystemStatus, getLogFiles, getLogContent } from "@/api/system";
+import {
+  getSystemStatus,
+  getLogFiles,
+  getLogContent,
+  downloadLog,
+} from "@/api/system";
 
 const activeTab = ref("basic");
 const isEditing = ref(false);
@@ -930,9 +936,33 @@ const refreshLogs = () => {
   ElMessage.success("日志列表已刷新");
 };
 
-const downloadLog = (name) => {
-  // 模拟下载日志
-  ElMessage.success(`正在下载日志文件: ${name}`);
+const downloadLogHand = async (fileName) => {
+  if (!fileName) {
+    ElMessage.warning("请选择有效的日志文件");
+    return;
+  }
+
+  try {
+    const blob = await downloadLog(fileName);
+    const url = window.URL.createObjectURL(blob as any);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = decodeURIComponent(fileName);
+    document.body.appendChild(link);
+    link.click();
+
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+
+    ElMessage.success("日志下载成功");
+  } catch (error) {
+    console.error("下载日志失败:", error);
+    const errorMsg = error.response?.data?.message || "下载日志失败，请重试";
+    ElMessage.error(errorMsg);
+  }
 };
 
 // 查看日志

@@ -3205,7 +3205,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "System"
+                    "系统维护"
                 ],
                 "summary": "获取日志内容",
                 "parameters": [
@@ -3243,6 +3243,75 @@ const docTemplate = `{
                                         "data": {
                                             "type": "object",
                                             "additionalProperties": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/system/logs/{name}/download": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "系统维护"
+                ],
+                "summary": "下载日志文件",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "日志文件名",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "日志文件二进制流",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string"
                                         }
                                     }
                                 }

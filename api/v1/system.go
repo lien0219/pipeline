@@ -1,8 +1,11 @@
 package v1
 
 import (
+	"fmt"
 	"gin_pipeline/model/response"
 	"gin_pipeline/service"
+	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +47,7 @@ func GetLogFiles(c *gin.Context) {
 }
 
 // GetLogContent 获取日志文件内容
-// @Tags System
+// @Tags 系统维护
 // @Summary 获取日志内容
 // @Security ApiKeyAuth
 // @Produce  application/json
@@ -76,4 +79,37 @@ func GetLogContent(c *gin.Context) {
 		"startLine":  startLine,
 		"limit":      limit,
 	}, c)
+}
+
+// 下载日志文件
+// @Tags 系统维护
+// @Summary 下载日志文件
+// @Security ApiKeyAuth
+// @Produce application/octet-stream
+// @Param name path string true "日志文件名"
+// @Success 200 {file} file "日志文件二进制流"
+// @Failure 400 {object} response.Response{msg=string}
+// @Failure 500 {object} response.Response{msg=string}
+// @Router /system/logs/{name}/download [get]
+func DownloadLog(c *gin.Context) {
+	name := c.Param("name")
+	if name == "" {
+		response.FailWithMessage("日志文件名不能为空", c)
+		return
+	}
+
+	content, err := service.DownloadLog(name)
+	if err != nil {
+		response.FailWithMessage("下载日志失败: "+err.Error(), c)
+		return
+	}
+
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename*=UTF-8''%s", url.QueryEscape(name)))
+	c.Header("Content-Length", strconv.Itoa(len(content)))
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
+	c.Data(http.StatusOK, "application/octet-stream", content)
+	c.Abort()
 }

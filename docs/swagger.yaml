@@ -3166,7 +3166,45 @@ paths:
       - ApiKeyAuth: []
       summary: 获取日志内容
       tags:
-      - System
+      - 系统维护
+  /system/logs/{name}/download:
+    get:
+      parameters:
+      - description: 日志文件名
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: 日志文件二进制流
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                msg:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                msg:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 下载日志文件
+      tags:
+      - 系统维护
   /system/status:
     get:
       produces:

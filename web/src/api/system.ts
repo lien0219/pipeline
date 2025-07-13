@@ -41,3 +41,14 @@ export const getLogContent = (
     },
   });
 };
+// 下载日志文件
+export const downloadLog = (name: string): Promise<Blob> => {
+  return http({
+    url: `/v1/system/logs/${name}/download`,
+    method: "get",
+    responseType: "blob",
+    params: {
+      t: new Date().getTime(),
+    },
+  });
+};

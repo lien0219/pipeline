@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gin_pipeline/global"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -94,4 +95,28 @@ func (s *LogService) GetLogContent(fileName string, startLine, limit int) (strin
 
 	// 返回内容和总行数
 	return strings.Join(lines, "\n"), lineCount, nil
+}
+
+// DownloadLog 下载日志文件
+func DownloadLog(filename string) ([]byte, error) {
+	if strings.Contains(filename, "..") {
+		return nil, fmt.Errorf("非法的日志文件名")
+	}
+
+	logDir := global.Config.Log.Director
+	if logDir == "" {
+		logDir = "logs"
+	}
+
+	filePath := path.Join(logDir, filename)
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("日志文件不存在")
+	}
+
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("读取日志文件失败: %v", err)
+	}
+
+	return content, nil
 }

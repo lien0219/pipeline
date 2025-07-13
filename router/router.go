@@ -295,5 +295,6 @@ func InitSystemRouter(Router *gin.RouterGroup) {
 		SystemRouter.GET("/status", v1.GetSystemStatus)
 		SystemRouter.GET("/logs", v1.GetLogFiles)
 		SystemRouter.GET("/logs/:name", v1.GetLogContent)
+		SystemRouter.GET("/logs/:name/download", v1.DownloadLog)
 	}
 }
