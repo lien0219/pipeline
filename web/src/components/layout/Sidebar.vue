@@ -59,6 +59,15 @@
           <el-icon><DataAnalysis /></el-icon>
           <template #title>DAG管理</template>
         </el-menu-item>
+        <el-sub-menu index="/resource">
+          <template #title>
+            <el-icon><TrendCharts /></el-icon>
+            <span>资源管理</span>
+          </template>
+          <el-menu-item index="/resource/quota">资源配额管理</el-menu-item>
+          <el-menu-item index="/resource/request">资源请求管理</el-menu-item>
+          <el-menu-item index="/resource/report">资源报告管理</el-menu-item>
+        </el-sub-menu>
 
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
@@ -81,6 +90,7 @@ import {
   Files,
   Setting,
   DataAnalysis,
+  TrendCharts,
 } from "@element-plus/icons-vue";
 
 const props = defineProps({

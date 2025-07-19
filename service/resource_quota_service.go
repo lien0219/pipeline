@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"gin_pipeline/global"
 	"gin_pipeline/model"
 	"time"
@@ -16,41 +18,30 @@ func CreateResourceQuota(quota model.ResourceQuota) error {
 	return global.DB.Create(&quota).Error
 }
 
-// GetResourceQuotaByTenantID 根据租户ID获取资源配额
-func GetResourceQuotaByTenantID(tenantID string) (model.ResourceQuota, error) {
-	var quota model.ResourceQuota
-	// 尝试从 Redis 中获取缓存
-	cacheKey := "resource_quota:" + tenantID
-	// 添加 context.Context 参数
-	cachedData, err := global.Redis.Get(context.Background(), cacheKey).Bytes()
-	if err == nil {
-		err = json.Unmarshal(cachedData, &quota)
-		if err == nil {
-			return quota, nil
-		}
-		global.Log.Warn("解析 Redis 缓存数据失败", zap.String("cacheKey", cacheKey), zap.Error(err))
+// GetResourceQuotaList 获取资源配额列表，支持分页和条件查询
+func GetResourceQuotaList(tenantID string, page, pageSize int) ([]model.ResourceQuota, int64, error) {
+	var quotas []model.ResourceQuota
+	var total int64
+
+	db := global.DB.Model(&model.ResourceQuota{})
+
+	// tenant_id查询
+	if tenantID != "" {
+		db = db.Where("tenant_id LIKE ?", "%"+tenantID+"%")
 	}
 
-	// Redis 中没有缓存，从数据库中获取
-	err = global.DB.Where("tenant_id = ?", tenantID).First(&quota).Error
-	if err != nil {
-		global.Log.Error("从数据库获取资源配额失败", zap.String("tenantID", tenantID), zap.Error(err))
-		return quota, err
+	// 获取总数
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
 
-	// 将结果存入 Redis 缓存
-	cachedData, err = json.Marshal(quota)
-	if err != nil {
-		global.Log.Warn("序列化资源配额数据失败", zap.String("tenantID", tenantID), zap.Error(err))
-		return quota, nil
-	}
-	// 添加 context.Context 参数
-	err = global.Redis.Set(context.Background(), cacheKey, cachedData, 5*time.Minute).Err()
-	if err != nil {
-		global.Log.Warn("将资源配额数据存入 Redis 缓存失败", zap.String("cacheKey", cacheKey), zap.Error(err))
+	// 分页查询
+	offset := (page - 1) * pageSize
+	if err := db.Offset(offset).Limit(pageSize).Find(&quotas).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return quota, nil
+	return quotas, total, nil
 }
 
 // UpdateResourceQuota 更新资源配额
@@ -64,10 +55,26 @@ func CreateResourceRequest(request model.TenantResourceRequest) error {
 }
 
 // GetResourceRequests 获取所有资源请求
-func GetResourceRequests() ([]model.TenantResourceRequest, error) {
+func GetResourceRequests(tenantID string, page, pageSize int) ([]model.TenantResourceRequest, int64, error) {
 	var requests []model.TenantResourceRequest
-	err := global.DB.Find(&requests).Error
-	return requests, err
+	var total int64
+
+	db := global.DB.Model(&model.TenantResourceRequest{})
+
+	if tenantID != "" {
+		db = db.Where("tenant_id LIKE ?", "%"+tenantID+"%")
+	}
+
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	if err := db.Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&requests).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return requests, total, nil
 }
 
 // ApproveResourceRequest 批准资源请求
@@ -288,11 +295,30 @@ func ProcessResourceRequests() {
 	}()
 }
 
-// GetAllResourceReports 获取所有资源报告
-func GetAllResourceReports() ([]model.ResourceReport, error) {
+// GetResourceReportList 获取资源报告列表，支持分页和条件查询
+func GetResourceReportList(tenantID string, page, pageSize int) ([]model.ResourceReport, int64, error) {
 	var reports []model.ResourceReport
-	err := global.DB.Find(&reports).Error
-	return reports, err
+	var total int64
+
+	db := global.DB.Model(&model.ResourceReport{})
+
+	// 租户ID查询条件
+	if tenantID != "" {
+		db = db.Where("tenant_id LIKE ?", "%"+tenantID+"%")
+	}
+
+	// 获取总数
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 分页查询
+	offset := (page - 1) * pageSize
+	if err := db.Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&reports).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return reports, total, nil
 }
 
 // GetResourceReportByID 根据 ID 获取资源报告
@@ -315,4 +341,23 @@ func UpdateResourceReport(id uint, report model.ResourceReport) error {
 // DeleteResourceReport 删除资源报告
 func DeleteResourceReport(id uint) error {
 	return global.DB.Delete(&model.ResourceReport{}, id).Error
+}
+
+// 删除资源配额
+func DeleteResourceQuota(tenantID string) error {
+	db := global.DB
+	var quota model.ResourceQuota
+
+	result := db.Where("tenant_id = ?", tenantID).First(&quota)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("租户ID %s 的资源配额不存在", tenantID)
+		}
+		return fmt.Errorf("查询资源配额失败: %v", result.Error)
+	}
+
+	if err := db.Delete(&quota).Error; err != nil {
+		return fmt.Errorf("删除资源配额失败: %v", err)
+	}
+	return nil
 }

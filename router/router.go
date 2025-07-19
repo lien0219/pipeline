@@ -226,15 +226,19 @@ func InitHPARouter(Router *gin.RouterGroup) {
 func InitResourceQuotaRouter(Router *gin.RouterGroup) {
 	ResourceQuotaRouter := Router.Group("/resource-quota").Use(middleware.JWTAuth())
 	{
+		ResourceQuotaRouter.GET("", v1.GetResourceQuotaList)
 		ResourceQuotaRouter.POST("", v1.CreateResourceQuota)
-		ResourceQuotaRouter.GET("/:tenant_id", v1.GetResourceQuota)
 		ResourceQuotaRouter.PUT("/:tenant_id", v1.UpdateResourceQuota)
+		ResourceQuotaRouter.DELETE("/:tenant_id", v1.DeleteResourceQuota)
 	}
+}
 
-	ResourceRequestRouter := Router.Group("/resource-request").Use(middleware.JWTAuth())
+// InitResourceRequestRouter 初始化资源请求路由
+func InitResourceRequestRouter(Router *gin.RouterGroup) {
+	ResourceRequestRouter := Router.Group("/resource-requests").Use(middleware.JWTAuth())
 	{
 		ResourceRequestRouter.POST("", v1.CreateResourceRequest)
-		ResourceRequestRouter.GET("/requests", v1.GetResourceRequests)
+		ResourceRequestRouter.GET("", v1.GetResourceRequests)
 		ResourceRequestRouter.POST("/:request_id/approve", v1.ApproveResourceRequest)
 		ResourceRequestRouter.POST("/:request_id/reject", v1.RejectResourceRequest)
 	}

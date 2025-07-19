@@ -2589,6 +2589,79 @@ const docTemplate = `{
             }
         },
         "/resource-quota": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取所有租户资源配额列表，支持分页和租户ID查询",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "资源配额管理"
+                ],
+                "summary": "获取资源配额列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户ID",
+                        "name": "tenant_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认为1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页条数，默认为10",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.PageResult"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "list": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/model.ResourceQuota"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -2628,53 +2701,6 @@ const docTemplate = `{
             }
         },
         "/resource-quota/{tenant_id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "根据租户ID获取资源配额",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "资源配额管理"
-                ],
-                "summary": "获取资源配额",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "租户ID",
-                        "name": "tenant_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.ResourceQuota"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
             "put": {
                 "security": [
                     {
@@ -2718,6 +2744,36 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "根据租户ID删除资源配额",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "资源配额管理"
+                ],
+                "summary": "删除资源配额",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户ID",
+                        "name": "tenant_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
             }
         },
         "/resource-report": {
@@ -2738,6 +2794,26 @@ const docTemplate = `{
                     "资源报告管理"
                 ],
                 "summary": "获取所有资源报告",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户ID",
+                        "name": "tenant_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认为1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页条数，默认为10",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2750,10 +2826,22 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.ResourceReport"
-                                            }
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.PageResult"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "list": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/model.ResourceReport"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 }
@@ -3048,7 +3136,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取所有待处理的资源请求",
+                "description": "获取资源请求列表，支持分页和租户ID查询",
                 "consumes": [
                     "application/json"
                 ],
@@ -3058,7 +3146,27 @@ const docTemplate = `{
                 "tags": [
                     "资源请求管理"
                 ],
-                "summary": "获取所有资源请求",
+                "summary": "获取资源请求列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "租户ID",
+                        "name": "tenant_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，默认为1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页条数，默认为10",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3071,10 +3179,22 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.TenantResourceRequest"
-                                            }
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.PageResult"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "list": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/model.TenantResourceRequest"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 }
@@ -5341,6 +5461,16 @@ const docTemplate = `{
                     "description": "内存使用量",
                     "type": "integer"
                 },
+                "reserved_cpu": {
+                    "description": "预留CPU字段",
+                    "type": "number"
+                },
+                "reserved_memory": {
+                    "type": "number"
+                },
+                "reserved_storage": {
+                    "type": "number"
+                },
                 "storage_quota": {
                     "description": "存储配额",
                     "type": "integer"
@@ -5945,13 +6075,16 @@ const docTemplate = `{
             ],
             "properties": {
                 "cpu_quota": {
-                    "type": "number"
+                    "type": "number",
+                    "minimum": 0
                 },
                 "memory_quota": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "storage_quota": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "tenant_id": {
                     "type": "string"
@@ -6393,20 +6526,18 @@ const docTemplate = `{
         },
         "request.UpdateResourceQuota": {
             "type": "object",
-            "required": [
-                "cpu_quota",
-                "memory_quota",
-                "storage_quota"
-            ],
             "properties": {
                 "cpu_quota": {
-                    "type": "number"
+                    "type": "number",
+                    "minimum": 0
                 },
                 "memory_quota": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "storage_quota": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 }
             }
         },

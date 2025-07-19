@@ -129,6 +129,35 @@ const routes = [
         meta: { requiresAuth: true, title: "系统设置" },
       },
       {
+        path: "resource",
+        name: "Resource",
+        redirect: "/resource/quota",
+        meta: { requiresAuth: true, title: "资源管理" },
+        children: [
+          {
+            path: "quota",
+            name: "ResourceQuota",
+            component: () =>
+              import("@/views/resource/quota/QuotaManagement.vue"),
+            meta: { requiresAuth: true, title: "资源配额管理" },
+          },
+          {
+            path: "request",
+            name: "ResourceRequest",
+            component: () =>
+              import("@/views/resource/request/RequestManagement.vue"),
+            meta: { requiresAuth: true, title: "资源请求管理" },
+          },
+          {
+            path: "report",
+            name: "ResourceReport",
+            component: () =>
+              import("@/views/resource/report/ReportManagement.vue"),
+            meta: { requiresAuth: true, title: "资源报告管理" },
+          },
+        ],
+      },
+      {
         path: "profile",
         name: "Profile",
         component: () => import("@/views/Profile.vue"),

@@ -8,17 +8,20 @@ import (
 
 // ResourceQuota 资源配额模型
 type ResourceQuota struct {
-	ID           uint           `gorm:"primarykey" json:"id"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
-	TenantID     string         `gorm:"size:255;not null;unique" json:"tenant_id"` // 租户ID
-	CPUQuota     float64        `gorm:"not null" json:"cpu_quota"`                 // CPU配额
-	MemoryQuota  int64          `gorm:"not null" json:"memory_quota"`              // 内存配额
-	StorageQuota int64          `gorm:"not null" json:"storage_quota"`             // 存储配额
-	CPUUsage     float64        `gorm:"not null" json:"cpu_usage"`                 // CPU使用量
-	MemoryUsage  int64          `gorm:"not null" json:"memory_usage"`              // 内存使用量
-	StorageUsage int64          `gorm:"not null" json:"storage_usage"`             // 存储使用量
+	ID              uint           `gorm:"primarykey" json:"id"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
+	DeletedAt       gorm.DeletedAt `gorm:"index" json:"-"`
+	TenantID        string         `gorm:"size:255;not null;unique" json:"tenant_id"` // 租户ID
+	CPUQuota        float64        `gorm:"not null" json:"cpu_quota"`                 // CPU配额
+	MemoryQuota     int64          `gorm:"not null" json:"memory_quota"`              // 内存配额
+	StorageQuota    int64          `gorm:"not null" json:"storage_quota"`             // 存储配额
+	CPUUsage        float64        `gorm:"not null" json:"cpu_usage"`                 // CPU使用量
+	MemoryUsage     int64          `gorm:"not null" json:"memory_usage"`              // 内存使用量
+	StorageUsage    int64          `gorm:"not null" json:"storage_usage"`             // 存储使用量
+	ReservedCPU     float64        `gorm:"not null;default:0" json:"reserved_cpu"`    // 预留CPU字段
+	ReservedMemory  float64        `gorm:"column:reserved_memory;default:0" json:"reserved_memory"`
+	ReservedStorage float64        `gorm:"column:reserved_storage;default:0" json:"reserved_storage"`
 }
 
 // TableName 设置表名

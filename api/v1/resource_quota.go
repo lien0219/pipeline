@@ -35,44 +35,54 @@ func CreateResourceQuota(c *gin.Context) {
 		CPUQuota:     req.CPUQuota,
 		MemoryQuota:  req.MemoryQuota,
 		StorageQuota: req.StorageQuota,
+		ReservedCPU:  0,
 	}
 
 	if err := service.CreateResourceQuota(quota); err != nil {
 		global.Log.Error("创建资源配额失败", zap.Error(err))
-		response.FailWithMessage("创建资源配额失败", c)
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") ||
+			strings.Contains(err.Error(), "UNIQUE constraint failed") ||
+			strings.Contains(err.Error(), "Duplicate entry") {
+			response.FailWithMessage("租户ID已存在，请使用其他租户ID或更新现有配额", c)
+		} else {
+			response.FailWithMessage("创建资源配额失败: "+err.Error(), c)
+		}
 		return
 	}
 
 	response.OkWithMessage("创建资源配额成功", c)
 }
 
-// GetResourceQuota 获取资源配额
-// @Summary 获取资源配额
-// @Description 根据租户ID获取资源配额
+// GetResourceQuotaList 获取资源配额列表
+// @Summary 获取资源配额列表
+// @Description 获取所有租户资源配额列表，支持分页和租户ID查询
 // @Tags 资源配额管理
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param tenant_id path string true "租户ID"
-// @Success 200 {object} response.Response{data=model.ResourceQuota}
-// @Router /resource-quota/{tenant_id} [get]
-func GetResourceQuota(c *gin.Context) {
-	tenantID := c.Param("tenant_id")
+// @Param tenant_id query string false "租户ID"
+// @Param page query int false "页码，默认为1"
+// @Param page_size query int false "每页条数，默认为10"
+// @Success 200 {object} response.Response{data=response.PageResult{list=[]model.ResourceQuota}}
+// @Router /resource-quota [get]
+func GetResourceQuotaList(c *gin.Context) {
+	tenantID := c.Query("tenant_id")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
 
-	quota, err := service.GetResourceQuotaByTenantID(tenantID)
+	quotas, total, err := service.GetResourceQuotaList(tenantID, page, pageSize)
 	if err != nil {
-		// 判断是否为记录未找到的错误
-		if strings.Contains(err.Error(), "record not found") {
-			global.Log.Warn("指定租户的资源配额记录未找到", zap.String("tenant_id", tenantID))
-			response.FailWithMessage("指定租户的资源配额记录未找到", c)
-		} else {
-			global.Log.Error("获取资源配额失败", zap.Error(err))
-			response.FailWithMessage("获取资源配额失败", c)
-		}
+		global.Log.Error("获取资源配额列表失败", zap.Error(err))
+		response.FailWithMessage("获取资源配额列表失败", c)
 		return
 	}
 
-	response.OkWithData(quota, c)
+	response.OkWithData(response.PageResult{
+		List:     quotas,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, c)
 }
 
 // UpdateResourceQuota 更新资源配额
@@ -142,24 +152,36 @@ func CreateResourceRequest(c *gin.Context) {
 	response.OkWithMessage("创建资源请求成功", c)
 }
 
-// GetResourceRequests 获取所有资源请求
-// @Summary 获取所有资源请求
-// @Description 获取所有待处理的资源请求
+// GetResourceRequests 获取资源请求列表
+// @Summary 获取资源请求列表
+// @Description 获取资源请求列表，支持分页和租户ID查询
 // @Tags 资源请求管理
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} response.Response{data=[]model.TenantResourceRequest}
+// @Param tenant_id query string false "租户ID"
+// @Param page query int false "页码，默认为1"
+// @Param page_size query int false "每页条数，默认为10"
+// @Success 200 {object} response.Response{data=response.PageResult{list=[]model.TenantResourceRequest}}
 // @Router /resource-requests [get]
 func GetResourceRequests(c *gin.Context) {
-	requests, err := service.GetResourceRequests()
+	tenantID := c.Query("tenant_id")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+
+	requests, total, err := service.GetResourceRequests(tenantID, page, pageSize)
 	if err != nil {
 		global.Log.Error("获取资源请求失败", zap.Error(err))
-		response.FailWithMessage("获取资源请求失败", c)
+		response.FailWithMessage("获取资源请求失败: "+err.Error(), c)
 		return
 	}
 
-	response.OkWithData(requests, c)
+	response.OkWithDetailed(response.PageResult{
+		List:     requests,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, "获取成功", c)
 }
 
 // ApproveResourceRequest 批准资源请求
@@ -223,16 +245,28 @@ func RejectResourceRequest(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} response.Response{data=[]model.ResourceReport}
+// @Param tenant_id query string false "租户ID"
+// @Param page query int false "页码，默认为1"
+// @Param page_size query int false "每页条数，默认为10"
+// @Success 200 {object} response.Response{data=response.PageResult{list=[]model.ResourceReport}}
 // @Router /resource-report [get]
 func GetAllResourceReports(c *gin.Context) {
-	reports, err := service.GetAllResourceReports()
+	tenantID := c.Query("tenant_id")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+
+	reports, total, err := service.GetResourceReportList(tenantID, page, pageSize)
 	if err != nil {
 		global.Log.Error("获取资源报告失败", zap.Error(err))
 		response.FailWithMessage("获取资源报告失败", c)
 		return
 	}
-	response.OkWithData(reports, c)
+	response.OkWithData(response.PageResult{
+		List:     reports,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, c)
 }
 
 // GetResourceReportByID 根据 ID 获取资源报告
@@ -344,4 +378,30 @@ func DeleteResourceReport(c *gin.Context) {
 		return
 	}
 	response.OkWithMessage("删除资源报告成功", c)
+}
+
+// 删除资源配额
+// @Summary 删除资源配额
+// @Description 根据租户ID删除资源配额
+// @Tags 资源配额管理
+// @Accept json
+// @Produce json
+// @Param tenant_id path string true "租户ID"
+// @Success 200 {object} response.Response
+// @Router /resource-quota/{tenant_id} [delete]
+func DeleteResourceQuota(c *gin.Context) {
+	tenantID := c.Param("tenant_id")
+	if tenantID == "" {
+		response.FailWithMessage("租户ID不能为空", c)
+		return
+	}
+
+	err := service.DeleteResourceQuota(tenantID)
+	if err != nil {
+		global.Log.Error("删除资源配额失败: " + err.Error())
+		response.FailWithMessage("删除资源配额失败: "+err.Error(), c)
+		return
+	}
+
+	response.OkWithMessage("删除资源配额成功", c)
 }

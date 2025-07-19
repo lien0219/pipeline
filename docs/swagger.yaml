@@ -349,6 +349,13 @@ definitions:
       memory_usage:
         description: 内存使用量
         type: integer
+      reserved_cpu:
+        description: 预留CPU字段
+        type: number
+      reserved_memory:
+        type: number
+      reserved_storage:
+        type: number
       storage_quota:
         description: 存储配额
         type: integer
@@ -756,10 +763,13 @@ definitions:
   request.CreateResourceQuota:
     properties:
       cpu_quota:
+        minimum: 0
         type: number
       memory_quota:
+        minimum: 0
         type: integer
       storage_quota:
+        minimum: 0
         type: integer
       tenant_id:
         type: string
@@ -1075,15 +1085,14 @@ definitions:
   request.UpdateResourceQuota:
     properties:
       cpu_quota:
+        minimum: 0
         type: number
       memory_quota:
+        minimum: 0
         type: integer
       storage_quota:
+        minimum: 0
         type: integer
-    required:
-    - cpu_quota
-    - memory_quota
-    - storage_quota
     type: object
   request.UpdateTemplate:
     properties:
@@ -2771,6 +2780,47 @@ paths:
       tags:
       - 发布管理
   /resource-quota:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有租户资源配额列表，支持分页和租户ID查询
+      parameters:
+      - description: 租户ID
+        in: query
+        name: tenant_id
+        type: string
+      - description: 页码，默认为1
+        in: query
+        name: page
+        type: integer
+      - description: 每页条数，默认为10
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.ResourceQuota'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取资源配额列表
+      tags:
+      - 资源配额管理
     post:
       consumes:
       - application/json
@@ -2795,10 +2845,10 @@ paths:
       tags:
       - 资源配额管理
   /resource-quota/{tenant_id}:
-    get:
+    delete:
       consumes:
       - application/json
-      description: 根据租户ID获取资源配额
+      description: 根据租户ID删除资源配额
       parameters:
       - description: 租户ID
         in: path
@@ -2811,15 +2861,8 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.ResourceQuota'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: 获取资源配额
+            $ref: '#/definitions/response.Response'
+      summary: 删除资源配额
       tags:
       - 资源配额管理
     put:
@@ -2855,6 +2898,19 @@ paths:
       consumes:
       - application/json
       description: 获取所有资源报告
+      parameters:
+      - description: 租户ID
+        in: query
+        name: tenant_id
+        type: string
+      - description: 页码，默认为1
+        in: query
+        name: page
+        type: integer
+      - description: 每页条数，默认为10
+        in: query
+        name: page_size
+        type: integer
       produces:
       - application/json
       responses:
@@ -2865,9 +2921,14 @@ paths:
             - $ref: '#/definitions/response.Response'
             - properties:
                 data:
-                  items:
-                    $ref: '#/definitions/model.ResourceReport'
-                  type: array
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.ResourceReport'
+                        type: array
+                    type: object
               type: object
       security:
       - BearerAuth: []
@@ -3049,7 +3110,20 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取所有待处理的资源请求
+      description: 获取资源请求列表，支持分页和租户ID查询
+      parameters:
+      - description: 租户ID
+        in: query
+        name: tenant_id
+        type: string
+      - description: 页码，默认为1
+        in: query
+        name: page
+        type: integer
+      - description: 每页条数，默认为10
+        in: query
+        name: page_size
+        type: integer
       produces:
       - application/json
       responses:
@@ -3060,13 +3134,18 @@ paths:
             - $ref: '#/definitions/response.Response'
             - properties:
                 data:
-                  items:
-                    $ref: '#/definitions/model.TenantResourceRequest'
-                  type: array
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.TenantResourceRequest'
+                        type: array
+                    type: object
               type: object
       security:
       - BearerAuth: []
-      summary: 获取所有资源请求
+      summary: 获取资源请求列表
       tags:
       - 资源请求管理
   /settings:
