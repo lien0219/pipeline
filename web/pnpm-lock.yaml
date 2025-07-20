@@ -11,6 +11,9 @@ dependencies:
   '@types/node':
     specifier: ^24.0.1
     version: 24.0.1
+  '@types/semver':
+    specifier: ^7.7.0
+    version: 7.7.0
   '@vue/tsconfig':
     specifier: ^0.7.0
     version: 0.7.0(typescript@5.8.3)(vue@3.5.13)
@@ -38,6 +41,9 @@ dependencies:
   pinia:
     specifier: ^2.1.6
     version: 2.1.6(typescript@5.8.3)(vue@3.5.13)
+  semver:
+    specifier: ^7.7.2
+    version: 7.7.2
   vue:
     specifier: ^3.3.4
     version: 3.5.13(typescript@5.8.3)
@@ -449,6 +455,10 @@ packages:
     resolution: {integrity: sha512-MX4Zioh39chHlDJbKmEgydJDS3tspMP/lnQC67G3SWsTnb9NeYVWOjkxpOSy4oMfPs4StcWHwBrvUb4ybfnuaw==}
     dependencies:
       undici-types: 7.8.0
+
+  /@types/semver@7.7.0:
+    resolution: {integrity: sha512-k107IF4+Xr7UHjwDc7Cfd6PRQfbdkiRabXGRjo07b4WyPahFBZCZ1sE+BNxYIJPPg73UkfOsVOLwqVc/6ETrIA==}
+    dev: false
 
   /@types/web-bluetooth@0.0.16:
     resolution: {integrity: sha512-oh8q2Zc32S6gd/j50GowEjKLoOVOwHP/bWVjKJInBwQqdOYMdPrf1oVlelTlyfFK3CKxL1uahMDAr+vy8T7yMQ==}
@@ -1752,7 +1762,6 @@ packages:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
     hasBin: true
-    dev: true
 
   /shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}

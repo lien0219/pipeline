@@ -4,9 +4,11 @@ import (
 	"errors"
 	"gin_pipeline/global"
 	"gin_pipeline/model"
-	"github.com/Masterminds/semver/v3"
-	"gorm.io/gorm"
 	"strings"
+
+	"github.com/Masterminds/semver/v3"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 // TemplateMarketService 模板市场服务
@@ -17,13 +19,32 @@ func (s *TemplateMarketService) CreateCategory(category *model.TemplateCategory)
 	return global.DB.Create(category).Error
 }
 
-// GetCategories 获取模板分类列表
-func (s *TemplateMarketService) GetCategories() ([]model.TemplateCategory, error) {
+// GetCategories 获取模板分类列表（支持分页和搜索）
+func (s *TemplateMarketService) GetCategories(page, pageSize int, keyword string) ([]model.TemplateCategory, int64, error) {
 	var categories []model.TemplateCategory
-	if err := global.DB.Order("order ASC, id ASC").Find(&categories).Error; err != nil {
-		return nil, err
+	db := global.DB.Model(&model.TemplateCategory{})
+
+	// 搜索功能
+	if keyword != "" {
+		keyword = "%" + keyword + "%"
+		db = db.Where("name LIKE ? OR description LIKE ?", keyword, keyword)
 	}
-	return categories, nil
+
+	// 获取总数
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
+		global.Log.Error("获取分类总数失败", zap.Error(err))
+		return nil, 0, err
+	}
+
+	// 分页处理
+	offset := (page - 1) * pageSize
+	if err := db.Order("`order` ASC, id ASC").Offset(offset).Limit(pageSize).Find(&categories).Error; err != nil {
+		global.Log.Error("获取分类列表失败", zap.Error(err))
+		return nil, 0, err
+	}
+
+	return categories, total, nil
 }
 
 // GetCategoryByID 根据ID获取模板分类
@@ -84,8 +105,8 @@ func (s *TemplateMarketService) CreateTemplate(template *model.Template, version
 }
 
 // GetTemplates 获取模板列表
-func (s *TemplateMarketService) GetTemplates(categoryID uint, isPublic *bool) ([]model.Template, error) {
-	query := global.DB.Model(&model.Template{}).Preload("Category").Preload("Creator")
+func (s *TemplateMarketService) GetTemplates(categoryID uint, isPublic *bool, page, pageSize int) ([]model.Template, int64, error) {
+	query := global.DB.Model(&model.Template{}).Preload("Category").Preload("Creator").Preload("Versions")
 
 	if categoryID > 0 {
 		query = query.Where("category_id = ?", categoryID)
@@ -95,12 +116,20 @@ func (s *TemplateMarketService) GetTemplates(categoryID uint, isPublic *bool) ([
 		query = query.Where("is_public = ?", *isPublic)
 	}
 
-	var templates []model.Template
-	if err := query.Order("id DESC").Find(&templates).Error; err != nil {
-		return nil, err
+	// 获取总数
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return templates, nil
+	// 分页处理
+	offset := (page - 1) * pageSize
+	var templates []model.Template
+	if err := query.Order("id DESC").Offset(offset).Limit(pageSize).Find(&templates).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return templates, total, nil
 }
 
 // GetTemplateByID 根据ID获取模板

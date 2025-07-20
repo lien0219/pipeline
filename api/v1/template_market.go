@@ -6,9 +6,10 @@ import (
 	"gin_pipeline/model/request"
 	"gin_pipeline/model/response"
 	"gin_pipeline/service"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"strconv"
 )
 
 var templateMarketService = new(service.TemplateMarketService)
@@ -57,22 +58,44 @@ func CreateTemplateCategory(c *gin.Context) {
 
 // GetTemplateCategories 获取模板分类列表
 // @Summary 获取模板分类列表
-// @Description 获取所有模板分类
+// @Description 获取模板分类列表，支持分页和搜索
 // @Tags 模板市场
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} response.Response{data=[]model.TemplateCategory} "获取成功"
+// @Param page query int false "页码，默认1"
+// @Param pageSize query int false "每页条数，默认10"
+// @Param keyword query string false "搜索关键字"
+// @Success 200 {object} response.Response{data=response.PageResult{list=[]model.TemplateCategory}} "获取成功"
 // @Router /template-market/category [get]
 func GetTemplateCategories(c *gin.Context) {
-	categories, err := templateMarketService.GetCategories()
+	// 获取分页参数
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+	keyword := c.Query("keyword")
+
+	// 参数验证
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	categories, total, err := templateMarketService.GetCategories(page, pageSize, keyword)
 	if err != nil {
 		global.Log.Error("获取模板分类列表失败", zap.Error(err))
-		response.FailWithMessage("获取分类列表失败", c)
+		response.FailWithMessage("获取分类列表失败: "+err.Error(), c)
 		return
 	}
 
-	response.OkWithData(categories, c)
+	// 返回分页结果
+	response.OkWithData(response.PageResult{
+		List:     categories,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, c)
 }
 
 // UpdateTemplateCategory 更新模板分类
@@ -222,9 +245,19 @@ func CreateTemplate(c *gin.Context) {
 // @Success 200 {object} response.Response{data=[]model.Template} "获取成功"
 // @Router /template-market/template [get]
 func GetTemplates(c *gin.Context) {
-	// 获取查询参数
 	categoryIDStr := c.Query("category_id")
 	publicStr := c.Query("public")
+	pageStr := c.Query("page")
+	pageSizeStr := c.Query("pageSize")
+
+	page, _ := strconv.Atoi(pageStr)
+	pageSize, _ := strconv.Atoi(pageSizeStr)
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 10
+	}
 
 	var categoryID uint
 	if categoryIDStr != "" {
@@ -240,14 +273,19 @@ func GetTemplates(c *gin.Context) {
 		isPublic = &public
 	}
 
-	templates, err := templateMarketService.GetTemplates(categoryID, isPublic)
+	templates, total, err := templateMarketService.GetTemplates(categoryID, isPublic, page, pageSize)
 	if err != nil {
 		global.Log.Error("获取模板列表失败", zap.Error(err))
 		response.FailWithMessage("获取模板列表失败", c)
 		return
 	}
 
-	response.OkWithData(templates, c)
+	response.OkWithData(response.PageResult{
+		List:     templates,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, c)
 }
 
 // GetTemplateByID 获取模板详情

@@ -3307,7 +3307,20 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取所有模板分类
+      description: 获取模板分类列表，支持分页和搜索
+      parameters:
+      - description: 页码，默认1
+        in: query
+        name: page
+        type: integer
+      - description: 每页条数，默认10
+        in: query
+        name: pageSize
+        type: integer
+      - description: 搜索关键字
+        in: query
+        name: keyword
+        type: string
       produces:
       - application/json
       responses:
@@ -3318,9 +3331,14 @@ paths:
             - $ref: '#/definitions/response.Response'
             - properties:
                 data:
-                  items:
-                    $ref: '#/definitions/model.TemplateCategory'
-                  type: array
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.TemplateCategory'
+                        type: array
+                    type: object
               type: object
       security:
       - BearerAuth: []

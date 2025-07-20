@@ -158,6 +158,38 @@ const routes = [
         ],
       },
       {
+        path: "template-market",
+        name: "TemplateMarket",
+        redirect: "/template-market/category",
+        meta: { requiresAuth: true, title: "模板市场" },
+        children: [
+          {
+            path: "category",
+            name: "TemplateCategory",
+            component: () => import("@/views/template-market/category.vue"),
+            meta: { requiresAuth: true, title: "分类管理" },
+          },
+          {
+            path: "template",
+            name: "TemplateManagement",
+            component: () => import("@/views/template-market/template.vue"),
+            meta: { requiresAuth: true, title: "模板管理" },
+          },
+          {
+            path: "version",
+            name: "VersionManagement",
+            component: () => import("@/views/template-market/version.vue"),
+            meta: { requiresAuth: true, title: "版本管理" },
+          },
+          {
+            path: "search",
+            name: "TemplateSearch",
+            component: () => import("@/views/template-market/search.vue"),
+            meta: { requiresAuth: true, title: "搜索下载" },
+          },
+        ],
+      },
+      {
         path: "profile",
         name: "Profile",
         component: () => import("@/views/Profile.vue"),

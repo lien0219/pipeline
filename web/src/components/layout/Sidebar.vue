@@ -69,6 +69,21 @@
           <el-menu-item index="/resource/report">资源报告管理</el-menu-item>
         </el-sub-menu>
 
+        <el-sub-menu index="/template-market">
+          <template #title>
+            <el-icon><Document /></el-icon>
+            <span>模板市场</span>
+          </template>
+          <el-menu-item index="/template-market/category"
+            >分类管理</el-menu-item
+          >
+          <el-menu-item index="/template-market/template"
+            >模板管理</el-menu-item
+          >
+          <!-- <el-menu-item index="/template-market/version">版本管理</el-menu-item> -->
+          <el-menu-item index="/template-market/search">搜索下载</el-menu-item>
+        </el-sub-menu>
+
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
           <template #title>系统设置</template>
@@ -91,6 +106,7 @@ import {
   Setting,
   DataAnalysis,
   TrendCharts,
+  Document,
 } from "@element-plus/icons-vue";
 
 const props = defineProps({

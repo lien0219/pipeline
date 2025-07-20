@@ -3478,7 +3478,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "获取所有模板分类",
+                "description": "获取模板分类列表，支持分页和搜索",
                 "consumes": [
                     "application/json"
                 ],
@@ -3489,6 +3489,26 @@
                     "模板市场"
                 ],
                 "summary": "获取模板分类列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码，默认1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页条数，默认10",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "搜索关键字",
+                        "name": "keyword",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "获取成功",
@@ -3501,10 +3521,22 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.TemplateCategory"
-                                            }
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.PageResult"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "list": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/model.TemplateCategory"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 }
