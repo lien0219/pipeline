@@ -83,7 +83,10 @@
           <!-- <el-menu-item index="/template-market/version">版本管理</el-menu-item> -->
           <el-menu-item index="/template-market/search">搜索下载</el-menu-item>
         </el-sub-menu>
-
+        <el-menu-item index="/webhook">
+          <el-icon><Files /></el-icon>
+          <template #title>webhook</template>
+        </el-menu-item>
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
           <template #title>系统设置</template>

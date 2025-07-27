@@ -127,3 +127,29 @@ func (s *WebhookService) actualTriggerWebhook(webhook model.Webhook, payload int
 
 	return nil
 }
+
+// GetWebhooksWithPage 分页获取webhooks，支持按流水线ID、名称和状态筛选
+func (s *WebhookService) GetWebhooksWithPage(pipelineID uint, name string, status *bool, page, pageSize int) ([]model.Webhook, int64, error) {
+	var webhooks []model.Webhook
+	var total int64
+
+	offset := (page - 1) * pageSize
+	db := global.DB.Model(&model.Webhook{})
+
+	if pipelineID > 0 {
+		db = db.Where("pipeline_id = ?", pipelineID)
+	}
+	if name != "" {
+		db = db.Where("name LIKE ?", "%"+name+"%")
+	}
+	if status != nil {
+		db = db.Where("is_active = ?", *status)
+	}
+
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := db.Limit(pageSize).Offset(offset).Order("created_at DESC").Find(&webhooks).Error
+	return webhooks, total, err
+}

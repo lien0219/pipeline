@@ -57,31 +57,55 @@ func CreateWebhook(c *gin.Context) {
 	response.OkWithData(webhook, c)
 }
 
-// GetWebhooksByPipelineID 获取流水线的webhooks
-// @Summary 获取流水线的webhooks
-// @Description 获取指定流水线的所有webhooks
+// GetWebhooks 获取webhooks（支持分页和按流水线ID筛选）
+// @Summary 获取webhooks
+// @Description 获取所有webhooks，支持分页和按流水线ID筛选
 // @Tags Webhook管理
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param pipelineId path int true "流水线ID"
-// @Success 200 {object} response.Response{data=[]model.Webhook} "获取成功"
-// @Router /webhook/pipeline/{pipelineId} [get]
-func GetWebhooksByPipelineID(c *gin.Context) {
-	pipelineIDStr := c.Param("pipelineId")
-	pipelineID, err := strconv.ParseUint(pipelineIDStr, 10, 32)
-	if err != nil {
-		global.Log.Error("无效的流水线ID", zap.Error(err))
-		response.FailWithMessage("无效的流水线ID", c)
-		return
+// @Param pipelineId query int false "流水线ID（可选）"
+// @Param page query int false "页码，默认1"
+// @Param pageSize query int false "每页条数，默认10"
+// @Param name query string false "Webhook名称（可选）"
+// @Param status query bool false "状态（可选）"
+// @Success 200 {object} response.Response{data=response.PageResult{list=[]model.Webhook}}
+// @Router /webhook [get]
+func GetWebhooks(c *gin.Context) {
+	pipelineIDStr := c.Query("pipelineId")
+	var pipelineID uint = 0
+	if pipelineIDStr != "" {
+		pid, err := strconv.ParseUint(pipelineIDStr, 10, 32)
+		if err != nil {
+			global.Log.Error("无效的流水线ID", zap.Error(err))
+			response.FailWithMessage("无效的流水线ID", c)
+			return
+		}
+		pipelineID = uint(pid)
 	}
 
-	webhooks, err := webhookService.GetWebhooksByPipelineID(uint(pipelineID))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	name := c.Query("name")
+	statusStr := c.Query("status")
+	var status *bool = nil
+	if statusStr != "" {
+		statusVal, _ := strconv.ParseBool(statusStr)
+		status = &statusVal
+	}
+
+	webhooks, total, err := webhookService.GetWebhooksWithPage(pipelineID, name, status, page, pageSize)
 	if err != nil {
 		global.Log.Error("获取webhooks失败", zap.Error(err))
 		response.FailWithMessage("获取webhooks失败", c)
 		return
 	}
 
-	response.OkWithData(webhooks, c)
+	response.OkWithData(response.PageResult{
+		List:     webhooks,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, c)
 }

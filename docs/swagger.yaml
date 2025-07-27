@@ -3919,6 +3919,55 @@ paths:
       tags:
       - 用户管理
   /webhook:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有webhooks，支持分页和按流水线ID筛选
+      parameters:
+      - description: 流水线ID（可选）
+        in: query
+        name: pipelineId
+        type: integer
+      - description: 页码，默认1
+        in: query
+        name: page
+        type: integer
+      - description: 每页条数，默认10
+        in: query
+        name: pageSize
+        type: integer
+      - description: Webhook名称（可选）
+        in: query
+        name: name
+        type: string
+      - description: 状态（可选）
+        in: query
+        name: status
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.Webhook'
+                        type: array
+                    type: object
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取webhooks
+      tags:
+      - Webhook管理
     post:
       consumes:
       - application/json
@@ -3945,36 +3994,6 @@ paths:
       security:
       - BearerAuth: []
       summary: 创建webhook
-      tags:
-      - Webhook管理
-  /webhook/pipeline/{pipelineId}:
-    get:
-      consumes:
-      - application/json
-      description: 获取指定流水线的所有webhooks
-      parameters:
-      - description: 流水线ID
-        in: path
-        name: pipelineId
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 获取成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/model.Webhook'
-                  type: array
-              type: object
-      security:
-      - BearerAuth: []
-      summary: 获取流水线的webhooks
       tags:
       - Webhook管理
   /yaml/history:

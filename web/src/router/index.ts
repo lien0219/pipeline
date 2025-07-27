@@ -190,6 +190,12 @@ const routes = [
         ],
       },
       {
+        path: "webhook",
+        name: "webhook",
+        component: () => import("@/views/webhook/WebhookList.vue"),
+        meta: { requiresAuth: true, title: "webhook" },
+      },
+      {
         path: "profile",
         name: "Profile",
         component: () => import("@/views/Profile.vue"),

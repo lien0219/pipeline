@@ -261,7 +261,7 @@ func InitWebhookRouter(Router *gin.RouterGroup) {
 	WebhookRouter := Router.Group("/webhook").Use(middleware.JWTAuth())
 	{
 		WebhookRouter.POST("", v1.CreateWebhook)
-		WebhookRouter.GET("/pipeline/:pipelineId", v1.GetWebhooksByPipelineID)
+		WebhookRouter.GET("", v1.GetWebhooks)
 	}
 }
 
