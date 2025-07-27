@@ -13,6 +13,6 @@ export const authApi = {
   },
 
   changePassword(data: any) {
-    return http.put("/auth/password", data);
+    return http.put("/v1/user/password", data);
   },
 };
