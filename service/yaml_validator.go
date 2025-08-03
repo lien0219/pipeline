@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"gin_pipeline/global"
 	"gin_pipeline/model"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"path/filepath"
 	"sync"
+
+	"go.uber.org/zap"
+	"gopkg.in/yaml.v3"
 )
 
 // YAMLValidator YAML验证器
@@ -196,24 +198,31 @@ func (v *YAMLValidator) SaveValidationResult(validation *model.YAMLValidation) e
 }
 
 // GetValidationHistory 获取验证历史
-func (v *YAMLValidator) GetValidationHistory(userID uint, limit int) ([]model.YAMLValidation, error) {
+func (v *YAMLValidator) GetValidationHistory(userID uint, name string, page, pageSize int) ([]model.YAMLValidation, int64, error) {
 	var validations []model.YAMLValidation
-	query := global.DB.Where("creator_id = ?", userID)
+	query := global.DB.Model(&model.YAMLValidation{}).Where("creator_id = ?", userID)
 
-	if limit > 0 {
-		query = query.Limit(limit)
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
 	}
 
-	if err := query.Order("created_at DESC").Find(&validations).Error; err != nil {
-		return nil, err
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		global.Log.Error("获取验证历史总数失败", zap.Error(err), zap.Uint("userID", userID))
+		return nil, 0, fmt.Errorf("获取验证历史总数失败: %w", err)
 	}
 
-	return validations, nil
+	offset := (page - 1) * pageSize
+	if err := query.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&validations).Error; err != nil {
+		global.Log.Error("获取验证历史列表失败", zap.Error(err), zap.Uint("userID", userID))
+		return nil, 0, fmt.Errorf("获取验证历史列表失败: %w", err)
+	}
+
+	return validations, total, nil
 }
 
 // CreateSchema 创建Schema
 func (v *YAMLValidator) CreateSchema(schema *model.YAMLSchema) error {
-	// 验证Schema是否有效
 	var js json.RawMessage
 	if err := json.Unmarshal([]byte(schema.Schema), &js); err != nil {
 		return errors.New("无效的JSON Schema: " + err.Error())
@@ -250,7 +259,7 @@ func (v *YAMLValidator) GetSchemaByID(id uint) (*model.YAMLSchema, error) {
 }
 
 // GetSchemas 获取Schema列表
-func (v *YAMLValidator) GetSchemas(schemaType string) ([]model.YAMLSchema, error) {
+func (v *YAMLValidator) GetSchemas(schemaType string, page, pageSize int) ([]model.YAMLSchema, int64, error) {
 	var schemas []model.YAMLSchema
 	query := global.DB.Model(&model.YAMLSchema{})
 
@@ -258,11 +267,18 @@ func (v *YAMLValidator) GetSchemas(schemaType string) ([]model.YAMLSchema, error
 		query = query.Where("type = ?", schemaType)
 	}
 
-	if err := query.Order("name ASC").Find(&schemas).Error; err != nil {
-		return nil, err
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return schemas, nil
+	offset := (page - 1) * pageSize
+
+	if err := query.Order("name ASC").Offset(offset).Limit(pageSize).Find(&schemas).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return schemas, total, nil
 }
 
 // ClearSchemaCache 清除Schema缓存

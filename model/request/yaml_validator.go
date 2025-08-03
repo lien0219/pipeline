@@ -24,3 +24,10 @@ type UpdateYAMLSchema struct {
 	Schema      string `json:"schema" binding:"required"` // JSON Schema内容
 	Description string `json:"description"`
 }
+
+// GetValidationHistory 获取验证历史请求参数
+type GetValidationHistory struct {
+	Name     string `form:"name"`
+	Page     int    `form:"page"`
+	PageSize int    `form:"pageSize"`
+}

@@ -87,6 +87,13 @@
           <el-icon><Files /></el-icon>
           <template #title>webhook</template>
         </el-menu-item>
+        <el-sub-menu index="/yaml-validator">
+          <template #title>
+            <el-icon><Document /></el-icon>
+            <span>YAML管理</span>
+          </template>
+          <el-menu-item index="/yaml-validator">YAML验证中心</el-menu-item>
+        </el-sub-menu>
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
           <template #title>系统设置</template>

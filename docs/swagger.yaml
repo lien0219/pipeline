@@ -4002,10 +4002,19 @@ paths:
       - application/json
       description: 获取当前用户的YAML验证历史
       parameters:
-      - default: 10
-        description: 限制数量
+      - description: 名称筛选
         in: query
-        name: limit
+        name: name
+        type: string
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
         type: integer
       produces:
       - application/json
@@ -4017,9 +4026,14 @@ paths:
             - $ref: '#/definitions/response.Response'
             - properties:
                 data:
-                  items:
-                    $ref: '#/definitions/model.YAMLValidation'
-                  type: array
+                  allOf:
+                  - $ref: '#/definitions/response.PageResult'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.YAMLValidation'
+                        type: array
+                    type: object
               type: object
       security:
       - BearerAuth: []
@@ -4037,6 +4051,16 @@ paths:
         in: query
         name: type
         type: string
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:

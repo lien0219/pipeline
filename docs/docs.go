@@ -4679,10 +4679,23 @@ const docTemplate = `{
                 "summary": "获取验证历史",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "名称筛选",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "default": 10,
-                        "description": "限制数量",
-                        "name": "limit",
+                        "description": "每页数量",
+                        "name": "pageSize",
                         "in": "query"
                     }
                 ],
@@ -4698,10 +4711,22 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.YAMLValidation"
-                                            }
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.PageResult"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "list": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/model.YAMLValidation"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 }
@@ -4735,6 +4760,20 @@ const docTemplate = `{
                         "default": "\"\"",
                         "description": "Schema类型",
                         "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "pageSize",
                         "in": "query"
                     }
                 ],

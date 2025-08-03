@@ -196,6 +196,35 @@ const routes = [
         meta: { requiresAuth: true, title: "webhook" },
       },
       {
+        path: "yaml-validator",
+        name: "yaml-validator",
+        redirect: "/yaml-validator",
+        meta: {
+          title: "YAML管理",
+          requiresAuth: true,
+        },
+        children: [
+          {
+            path: "",
+            name: "YamlValidator",
+            component: () => import("@/views/yaml-validator/index.vue"),
+            meta: {
+              title: "YAML验证中心",
+              requiresAuth: true,
+            },
+          },
+          {
+            path: "schema/:id",
+            name: "SchemaDetail",
+            component: () => import("@/views/yaml-validator/schema-detail.vue"),
+            meta: {
+              title: "Schema详情",
+              requiresAuth: true,
+            },
+          },
+        ],
+      },
+      {
         path: "profile",
         name: "Profile",
         component: () => import("@/views/Profile.vue"),

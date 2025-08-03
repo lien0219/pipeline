@@ -6,9 +6,10 @@ import (
 	"gin_pipeline/model/request"
 	"gin_pipeline/model/response"
 	"gin_pipeline/service"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"strconv"
 )
 
 var yamlValidator = service.NewYAMLValidator()
@@ -81,33 +82,44 @@ func ValidateYAML(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param limit query int false "限制数量" default(10)
-// @Success 200 {object} response.Response{data=[]model.YAMLValidation} "获取成功"
+// @Param name query string false "名称筛选"
+// @Param page query int false "页码" default(1)
+// @Param pageSize query int false "每页数量" default(10)
+// @Success 200 {object} response.Response{data=response.PageResult{list=[]model.YAMLValidation}} "获取成功"
 // @Router /yaml/history [get]
 func GetValidationHistory(c *gin.Context) {
-	// 从上下文获取用户ID
 	userID := c.GetUint("userId")
 	if userID == 0 {
-		response.FailWithMessage("获取验证历史失败", c)
+		response.FailWithMessage("获取验证历史失败: 未找到用户ID", c)
 		return
 	}
 
-	// 获取limit参数
-	limitStr := c.DefaultQuery("limit", "10")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
-		limit = 10
-	}
-
-	// 获取验证历史
-	validations, err := yamlValidator.GetValidationHistory(userID, limit)
-	if err != nil {
-		global.Log.Error("获取验证历史失败", zap.Error(err))
-		response.FailWithMessage("获取验证历史失败", c)
+	var req request.GetValidationHistory
+	if err := c.ShouldBindQuery(&req); err != nil {
+		response.FailWithMessage("参数错误: "+err.Error(), c)
 		return
 	}
 
-	response.OkWithData(validations, c)
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 || req.PageSize > 1000 {
+		req.PageSize = 10
+	}
+
+	validations, total, err := yamlValidator.GetValidationHistory(userID, req.Name, req.Page, req.PageSize)
+	if err != nil {
+		global.Log.Error("获取验证历史失败", zap.Error(err), zap.Uint("userID", userID))
+		response.FailWithMessage("获取验证历史失败: "+err.Error(), c)
+		return
+	}
+
+	response.OkWithDetailed(response.PageResult{
+		List:     validations,
+		Total:    total,
+		Page:     req.Page,
+		PageSize: req.PageSize,
+	}, "获取成功", c)
 }
 
 // CreateYAMLSchema 创建YAML Schema
@@ -245,21 +257,40 @@ func DeleteYAMLSchema(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param type query string false "Schema类型" default("")
+// @Param page query int false "页码" default(1)
+// @Param pageSize query int false "每页数量" default(10)
 // @Success 200 {object} response.Response{data=[]model.YAMLSchema} "获取成功"
 // @Router /yaml/schema [get]
 func GetYAMLSchemas(c *gin.Context) {
-	// 获取type参数
 	schemaType := c.DefaultQuery("type", "")
 
+	pageStr := c.DefaultQuery("page", "1")
+	pageSizeStr := c.DefaultQuery("pageSize", "10")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 || pageSize > 1000 {
+		pageSize = 10
+	}
+
 	// 获取Schema列表
-	schemas, err := yamlValidator.GetSchemas(schemaType)
+	schemas, total, err := yamlValidator.GetSchemas(schemaType, page, pageSize)
 	if err != nil {
 		global.Log.Error("获取Schema列表失败", zap.Error(err))
 		response.FailWithMessage("获取Schema列表失败", c)
 		return
 	}
 
-	response.OkWithData(schemas, c)
+	response.OkWithDetailed(response.PageResult{
+		List:     schemas,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, "获取成功", c)
 }
 
 // GetYAMLSchemaByID 获取YAML Schema详情
